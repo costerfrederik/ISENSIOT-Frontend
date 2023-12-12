@@ -1,18 +1,25 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+    <div>
+        <span>{{ data }}</span>
+    </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+import { socket, socketState } from '@/socket';
 
 export default defineComponent({
-  name: 'HomeView',
-  components: {
-    HelloWorld,
-  },
+    name: 'HomeView',
+    computed: {
+        data() {
+            return socketState.payload;
+        },
+    },
+    // mounted() {
+    //     console.log(socketState.payload);
+    // },
+    beforeUnmount() {
+        socket.disconnect();
+    },
 });
 </script>
