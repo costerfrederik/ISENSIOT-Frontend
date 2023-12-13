@@ -16,5 +16,6 @@ export const socket = io(url);
 
 // Set state when it receives positionChange
 socket.on('table_updated', (payload) => {
+    console.log('table updated!');
     socketState.payload = payload;
 });

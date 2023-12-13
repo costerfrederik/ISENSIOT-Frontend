@@ -1,13 +1,30 @@
 <template>
+    <AppHeader></AppHeader>
     <router-view />
 </template>
 
+<script lang="ts">
+import AppHeader from '@/components/AppHeader.vue';
+export default {
+    name: 'App',
+    components: {
+        AppHeader,
+    },
+};
+</script>
+
 <style lang="scss">
+html,
+body {
+    overflow-x: hidden;
+    margin: 0;
+    height: 100%;
+}
+* {
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+}
 #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
+    height: 100%;
 }
 </style>
