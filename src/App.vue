@@ -3,16 +3,9 @@
     <router-view />
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import AppHeader from '@/components/AppHeader.vue';
 import '../node_modules/mapbox-gl/dist/mapbox-gl.css';
-
-export default {
-    name: 'App',
-    components: {
-        AppHeader,
-    },
-};
 </script>
 
 <style lang="scss">
