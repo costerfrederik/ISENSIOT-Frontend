@@ -5,13 +5,16 @@
             <input class="filter__searchbox" type="text" name="searchbox" placeholder="Search Vehicles by identifier" />
             <h4 class="filter__title">Your vehicles</h4>
         </section>
-        <template v-if="!socketState.mapData || !socketState.mapData.length">
+        <template v-if="vehiclesLoading || !socketState.mapData || !socketState.mapData.length">
             <article class="list__taxi taxi--disabled">
                 <section class="taxi__top">
-                    <img src="@/assets/notfound_icon.png" alt="warning icon" height="24" width="24" />
-                    <h4 class="taxi__identifier">No vehicles linked</h4>
+                    <img v-if="!vehiclesLoading" src="@/assets/warning_icon.png" alt="warning icon" height="24" width="24" />
+                    <img v-else src="@/assets/time_icon.png" alt="warning icon" height="24" width="24" />
+                    <h4 class="taxi__identifier">{{ vehiclesLoading ? 'Loading your vehicles' : 'No vehicles linked' }}</h4>
                 </section>
-                <p class="taxi__lastposition">Linked vehicles will be shown here.</p>
+                <p class="taxi__lastposition">
+                    {{ vehiclesLoading ? 'Your linked vehicles are being loaded in.' : 'Linked vehicles will be shown here. But you have none.' }}
+                </p>
             </article>
         </template>
         <template v-else>
@@ -32,6 +35,8 @@ import { LatestPosition } from '@/interfaces/MapData';
 import { socketState } from '@/socket';
 import { useSideBarStore } from '@/stores/sidebar';
 const sideBarStore = useSideBarStore();
+import { onMounted, ref } from 'vue';
+const vehiclesLoading = ref(true);
 
 function latestPosition(latestPosition: LatestPosition | undefined) {
     if (!latestPosition) {
@@ -39,6 +44,12 @@ function latestPosition(latestPosition: LatestPosition | undefined) {
     }
     return new Date(latestPosition.datetime).toLocaleString('nl-nl');
 }
+
+onMounted(() => {
+    setTimeout(() => {
+        vehiclesLoading.value = false;
+    }, 2000);
+});
 </script>
 
 <style scoped lang="scss">
