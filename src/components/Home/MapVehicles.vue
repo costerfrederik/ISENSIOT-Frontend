@@ -5,26 +5,40 @@
             <input class="filter__searchbox" type="text" name="searchbox" placeholder="Search Vehicles by identifier" />
             <h4 class="filter__title">Your vehicles</h4>
         </section>
-        <article class="list__taxi taxi--focused">
-            <section class="taxi__top">
-                <img src="@/assets/taxi_icon.png" alt="" height="24" width="24" />
-                <h4 class="taxi__identifier">1-ZRG-83</h4>
-            </section>
-            <p class="taxi__lastposition">Last position: 23s ago</p>
-        </article>
-        <article class="list__taxi">
-            <section class="taxi__top">
-                <img src="@/assets/warning_icon.png" alt="" height="24" width="24" />
-                <h4 class="taxi__identifier">Ferrari F140</h4>
-            </section>
-            <p class="taxi__lastposition">Last position: Never</p>
-        </article>
+        <template v-if="!socketState.mapData || !socketState.mapData.length">
+            <article class="list__taxi taxi--disabled">
+                <section class="taxi__top">
+                    <img src="@/assets/notfound_icon.png" alt="warning icon" height="24" width="24" />
+                    <h4 class="taxi__identifier">No vehicles linked</h4>
+                </section>
+                <p class="taxi__lastposition">Linked vehicles will be shown here.</p>
+            </article>
+        </template>
+        <template v-else>
+            <article v-for="point in socketState.mapData" v-bind:key="point.identifier" class="list__taxi">
+                <section class="taxi__top">
+                    <img v-if="point.latestPosition" src="@/assets/taxi_icon.png" alt="taxi icon" height="24" width="24" />
+                    <img v-else src="@/assets/warning_icon.png" alt="warning icon" height="24" width="24" />
+                    <h4 class="taxi__identifier">{{ point.identifier }}</h4>
+                </section>
+                <p class="taxi__lastposition">Last position: {{ latestPosition(point.latestPosition) }}</p>
+            </article>
+        </template>
     </section>
 </template>
 
 <script setup lang="ts">
+import { LatestPosition } from '@/interfaces/MapData';
+import { socketState } from '@/socket';
 import { useSideBarStore } from '@/stores/sidebar';
 const sideBarStore = useSideBarStore();
+
+function latestPosition(latestPosition: LatestPosition | undefined) {
+    if (!latestPosition) {
+        return 'Never';
+    }
+    return new Date(latestPosition.datetime).toLocaleString('nl-nl');
+}
 </script>
 
 <style scoped lang="scss">
@@ -80,6 +94,9 @@ const sideBarStore = useSideBarStore();
         display: flex;
         justify-content: space-between;
         flex-direction: column;
+        &.taxi--disabled {
+            cursor: initial;
+        }
 
         &.taxi--focused {
             background-color: #1c1b24;
