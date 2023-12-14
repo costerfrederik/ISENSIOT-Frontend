@@ -22,4 +22,9 @@ body {
 #app {
     height: 100%;
 }
+
+// Used to remove blue border from mapboxgl map when pressing key
+canvas {
+    outline: none !important;
+}
 </style>
