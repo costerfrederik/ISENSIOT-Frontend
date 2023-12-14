@@ -84,6 +84,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     window.removeEventListener('keyup', handleKeyRelease);
+    sideBarStore.resetStateToInitial();
     if (mapInstance.value) {
         mapInstance.value.remove();
         mapInstance.value = undefined;
