@@ -3,14 +3,9 @@
     <router-view />
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import AppHeader from '@/components/AppHeader.vue';
-export default {
-    name: 'App',
-    components: {
-        AppHeader,
-    },
-};
+import '../node_modules/mapbox-gl/dist/mapbox-gl.css';
 </script>
 
 <style lang="scss">
@@ -26,5 +21,10 @@ body {
 }
 #app {
     height: 100%;
+}
+
+// Used to remove blue border from mapboxgl map when pressing key
+canvas {
+    outline: none !important;
 }
 </style>

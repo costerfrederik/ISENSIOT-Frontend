@@ -13,10 +13,10 @@
 
 <style scoped lang="scss">
 .header {
-    border-bottom: 1px solid #eeeeee;
-    background-color: white;
+    //border-bottom: 1px solid #eeeeee;
+    background-color: #121217;
     padding: 0 24px;
-    height: 75px;
+    height: 70px;
     width: 100%;
 
     display: flex;
@@ -30,30 +30,32 @@
         gap: 12px;
 
         .nav__link {
-            border: 1px solid #eeeeee;
+            border: 2px solid #161a1d;
             border-radius: 8px;
-            padding: 14px 24px;
-            color: black;
+            padding: 12px 24px;
+            color: white;
             text-decoration: none;
             font-size: 14px;
+            transition: background-color 0.3s;
 
+            &:hover,
             &.link--active {
-                background-color: #fafafa;
+                background-color: #1c1b24;
             }
         }
     }
 
     .header__divider {
-        background-color: #eeeeee;
+        background-color: #161a1d;
         height: 25px;
         width: 1px;
     }
 
     .header__action {
-        background-color: black;
-        border: 1px solid black;
+        background-color: #007afb;
+        border: 2px solid #007afb;
         border-radius: 8px;
-        padding: 14px 24px;
+        padding: 12px 24px;
         color: white;
         font-size: 14px;
         cursor: pointer;
