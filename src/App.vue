@@ -11,7 +11,7 @@ import '../node_modules/mapbox-gl/dist/mapbox-gl.css';
 <style lang="scss">
 html,
 body {
-    overflow-x: hidden;
+    overflow: hidden;
     margin: 0;
     height: 100%;
 }
