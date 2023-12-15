@@ -2,47 +2,72 @@
     <section class="overview__list" :class="{ 'list--collapsed': !sideBarStore.isOpen }">
         <section class="list__filter">
             <h4>Filter</h4>
-            <input class="filter__searchbox" type="text" name="searchbox" placeholder="Search Vehicles by identifier" />
+            <input class="filter__searchbox" v-model="searchQuery" type="text" name="searchbox" placeholder="Search Vehicles by identifier" />
             <h4 class="filter__title">Your vehicles</h4>
         </section>
-        <template v-if="vehiclesLoading || !socketState.mapData || !socketState.mapData.length">
+        <template v-if="vehiclesLoading">
             <article class="list__taxi taxi--disabled">
                 <section class="taxi__top">
-                    <img v-if="!vehiclesLoading" src="@/assets/warning_icon.png" alt="warning icon" height="24" width="24" />
-                    <img v-else src="@/assets/time_icon.png" alt="warning icon" height="24" width="24" />
-                    <h4 class="taxi__identifier">{{ vehiclesLoading ? 'Loading your vehicles' : 'No vehicles linked' }}</h4>
+                    <img src="@/assets/time_icon.png" alt="loading icon" height="24" width="24" />
+                    <h4 class="taxi__identifier">Loading your vehicles</h4>
                 </section>
-                <p class="taxi__lastposition">
-                    {{ vehiclesLoading ? 'Your linked vehicles are being loaded in.' : 'Linked vehicles will be shown here. But you have none.' }}
-                </p>
+                <p class="taxi__lastposition">Your linked vehicles are being loaded in.</p>
+            </article>
+        </template>
+        <template v-else-if="!socketState.mapData || !socketState.mapData.length">
+            <article class="list__taxi taxi--disabled">
+                <section class="taxi__top">
+                    <img src="@/assets/notlinked_icon.png" alt="Nothing linked icon" height="24" width="24" />
+                    <h4 class="taxi__identifier">No vehicles linked</h4>
+                </section>
+                <p class="taxi__lastposition">Linked vehicles will be shown here. But you have none.</p>
+            </article>
+        </template>
+        <template v-else-if="!filteredMapObjects.length">
+            <article class="list__taxi taxi--disabled">
+                <section class="taxi__top">
+                    <img src="@/assets/notfound_icon.png" alt="Not found icon" height="24" width="24" />
+                    <h4 class="taxi__identifier">No vehicles found</h4>
+                </section>
+                <p class="taxi__lastposition">Your search query did not have any results.</p>
             </article>
         </template>
         <template v-else>
-            <article v-for="point in socketState.mapData" v-bind:key="point.identifier" class="list__taxi">
+            <article v-for="mapObject in filteredMapObjects" v-bind:key="mapObject.identifier" class="list__taxi">
                 <section class="taxi__top">
-                    <img v-if="point.latestPosition" src="@/assets/taxi_icon.png" alt="taxi icon" height="24" width="24" />
+                    <img v-if="mapObject.position" src="@/assets/taxi_icon.png" alt="taxi icon" height="24" width="24" />
                     <img v-else src="@/assets/warning_icon.png" alt="warning icon" height="24" width="24" />
-                    <h4 class="taxi__identifier">{{ point.identifier }}</h4>
+                    <h4 class="taxi__identifier">{{ mapObject.identifier }}</h4>
                 </section>
-                <p class="taxi__lastposition">Last position: {{ latestPosition(point.latestPosition) }}</p>
+                <p class="taxi__lastposition">Last position: {{ lastPositionFormatted(mapObject.position) }}</p>
             </article>
         </template>
     </section>
 </template>
 
 <script setup lang="ts">
-import { LatestPosition } from '@/interfaces/MapData';
 import { socketState } from '@/socket';
+import { onMounted, ref } from 'vue';
+import { computed } from 'vue';
+import { Position, MapDataObject } from '@/interfaces/MapData';
 import { useSideBarStore } from '@/stores/sidebar';
 const sideBarStore = useSideBarStore();
-import { onMounted, ref } from 'vue';
+
+// Searchbar
+const searchQuery = ref('');
+const filteredMapObjects = computed(() => {
+    return socketState.mapData.filter((mapObject: MapDataObject) => {
+        return mapObject.identifier.toLowerCase().trim().includes(searchQuery.value.toLowerCase().trim());
+    });
+});
+
 const vehiclesLoading = ref(true);
 
-function latestPosition(latestPosition: LatestPosition | undefined) {
-    if (!latestPosition) {
+function lastPositionFormatted(position: Position | undefined) {
+    if (!position) {
         return 'Never';
     }
-    return new Date(latestPosition.datetime).toLocaleString('nl-nl');
+    return new Date(position.datetime).toLocaleString('nl-nl');
 }
 
 onMounted(() => {
