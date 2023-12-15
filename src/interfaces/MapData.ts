@@ -11,6 +11,4 @@ interface MapDataObject {
     position?: Position;
 }
 
-type MapData = MapDataObject[];
-
-export { Position, MapDataObject, MapData };
+export { MapDataObject, Position };

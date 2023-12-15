@@ -1,5 +1,5 @@
 <template>
-    <article class="list__taxi" :class="{ 'taxi--focused': active, 'taxi--disabled': disabled }">
+    <article class="list__taxi" :class="{ 'taxi--focused': active, 'taxi--disabled': disabled }" @click="!disabled && handleSelect()">
         <section class="taxi__top">
             <img :src="require('@/assets/' + iconName)" :alt="iconName" height="24" width="24" />
             <h4 class="taxi__identifier">{{ identifier }}</h4>
@@ -9,6 +9,7 @@
 </template>
 
 <script setup lang="ts">
+const emit = defineEmits(['onSelect']);
 const props = defineProps({
     iconName: {
         type: String,
@@ -31,6 +32,10 @@ const props = defineProps({
         default: false,
     },
 });
+
+function handleSelect() {
+    emit('onSelect');
+}
 </script>
 
 <style scoped lang="scss">
@@ -43,8 +48,9 @@ const props = defineProps({
     display: flex;
     justify-content: space-between;
     flex-direction: column;
+    user-select: none;
     &.taxi--disabled {
-        cursor: initial;
+        cursor: not-allowed;
     }
 
     &.taxi--focused {

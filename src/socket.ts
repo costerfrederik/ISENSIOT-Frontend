@@ -1,6 +1,7 @@
 import { reactive } from 'vue';
 import { io } from 'socket.io-client';
 import { MapDataObject } from './interfaces/MapData';
+import { useMapStore } from '@/stores/map';
 
 // You can specify here the url for the sockets backend
 const url = 'http://localhost:3000';
@@ -9,14 +10,14 @@ const url = 'http://localhost:3000';
 export const socket = io(url);
 
 // Here our state will be declared
-export const socketState = reactive<{ connected: boolean; mapData: MapDataObject[] }>({
+export const socketState = reactive({
     connected: false,
-    mapData: [],
 });
 
 // Set new mapdata when server sends it to us
 socket.on('refresh_needed', (payload: MapDataObject[]) => {
-    socketState.mapData = payload;
+    const mapStore = useMapStore();
+    mapStore.setMapData(payload);
 });
 
 // Manually refresh map data

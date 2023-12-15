@@ -1,6 +1,6 @@
 <template>
     <section class="mapContainer">
-        <MapVehicles></MapVehicles>
+        <MapVehicles @onSelect="handleOnLock"></MapVehicles>
         <span @click="sideBarStore.toggleSidebar">Press <b>Escape</b> to {{ sideBarStore.isOpen ? 'close' : 'open' }} sidemenu</span>
         <section class="mapPlaceHolder" ref="mapPlaceHolder"></section>
     </section>
@@ -12,32 +12,13 @@ import { useSideBarStore } from '@/stores/sidebar';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import MapVehicles from '@/components/Home/MapVehicles.vue';
+import { MapDataObject } from '@/interfaces/MapData';
+import { useMapStore } from '@/stores/map';
 
 const sideBarStore = useSideBarStore();
-mapboxgl.accessToken = '';
+const mapStore = useMapStore();
+mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xxMzNyeno0MDhhMDJqbzRyc3Z0NnN2cCJ9.8X6v6K23BdJpsN_1-J9Ccg';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
-const mapInstance: Ref<mapboxgl.Map | undefined> = ref();
-
-watch(
-    () => sideBarStore.isOpen,
-    () => {
-        animateMap();
-    }
-);
-
-function animateMap() {
-    if (mapInstance.value) {
-        mapInstance.value.easeTo({
-            duration: 1000,
-            padding: {
-                top: 0,
-                bottom: 0,
-                left: sideBarStore.isOpen ? 300 : 0,
-                right: 0,
-            },
-        });
-    }
-}
 
 function handleKeyRelease(event: KeyboardEvent) {
     if (event.code == 'Escape') {
@@ -45,50 +26,98 @@ function handleKeyRelease(event: KeyboardEvent) {
     }
 }
 
-onMounted(() => {
-    if (mapPlaceHolder.value) {
-        // Create mapboxgl map
-        const map = new mapboxgl.Map({
-            container: mapPlaceHolder.value,
-            style: 'mapbox://styles/isensiot/clq3qs9my01ye01p980krh970',
-            center: [4.488068583333333, 52.15482278333333],
-            zoom: 15,
-            minZoom: 7,
-            attributionControl: false,
-            logoPosition: 'bottom-right',
-        });
+function handleOnLock(lockedMapObject: MapDataObject | undefined) {
+    if (!mapStore.mapInstance) {
+        return;
+    }
+    if (lockedMapObject == undefined) {
+        mapStore.mapInstance.stop();
+        return;
+    }
+    if (!lockedMapObject.position) {
+        return;
+    }
 
-        // Add controls to map
-        map.addControl(
-            new mapboxgl.NavigationControl({
-                visualizePitch: true,
-            })
-        );
+    mapStore.mapInstance.flyTo({
+        center: [lockedMapObject.position.longitude, lockedMapObject.position.latitude],
+        zoom: 17,
+        speed: 0.9,
+        essential: true,
+    });
+}
 
-        // Add padding to map if sidebar is open
-        if (sideBarStore.isOpen) {
-            map.jumpTo({
-                padding: {
-                    top: 0,
-                    bottom: 0,
-                    left: 300,
-                    right: 0,
-                },
-            });
+function addMarkersToMap(mapDataObjects: MapDataObject[]) {
+    mapDataObjects.forEach((mapDataObject: MapDataObject) => {
+        if (!mapStore.mapInstance || !mapDataObject.position) {
+            return;
         }
 
-        window.addEventListener('keyup', handleKeyRelease);
-        mapInstance.value = map;
+        const markerElement = document.createElement('div');
+        markerElement.className = 'marker';
+
+        markerElement.addEventListener('click', () => {
+            handleOnLock(mapDataObject);
+        });
+
+        const marker = new mapboxgl.Marker(markerElement, {
+            scale: 0.6,
+        })
+            .setLngLat([mapDataObject.position.longitude, mapDataObject.position.latitude])
+            .addTo(mapStore.mapInstance);
+        mapStore.mapMarkers.push(marker);
+    });
+}
+
+onMounted(async () => {
+    if (!mapPlaceHolder.value) {
+        return;
     }
+
+    // Create mapboxgl map
+    const map = new mapboxgl.Map({
+        container: mapPlaceHolder.value,
+        style: 'mapbox://styles/isensiot/clq3qs9my01ye01p980krh970',
+        center: [5.2793703, 52.2129919],
+        zoom: 7,
+        attributionControl: false,
+        logoPosition: 'bottom-right',
+    });
+
+    // Add controls to map
+    map.addControl(
+        new mapboxgl.NavigationControl({
+            visualizePitch: true,
+        })
+    );
+
+    // Add padding to map if sidebar is open
+    if (sideBarStore.isOpen) {
+        map.jumpTo({
+            padding: {
+                top: 0,
+                bottom: 0,
+                left: 250,
+                right: 0,
+            },
+        });
+    }
+
+    mapStore.mapInstance = map;
+    window.addEventListener('keyup', handleKeyRelease);
+
+    watch(
+        () => mapStore.mapData,
+        (mapDataObjects: MapDataObject[]) => {
+            addMarkersToMap(mapDataObjects);
+        },
+        { immediate: true }
+    );
 });
 
 onUnmounted(() => {
     window.removeEventListener('keyup', handleKeyRelease);
     sideBarStore.resetStateToInitial();
-    if (mapInstance.value) {
-        mapInstance.value.remove();
-        mapInstance.value = undefined;
-    }
+    mapStore.resetStateToInitial();
 });
 </script>
 
