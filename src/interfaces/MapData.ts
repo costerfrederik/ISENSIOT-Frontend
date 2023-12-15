@@ -1,4 +1,4 @@
-interface LatestPosition {
+interface Position {
     id: number;
     latitude: number;
     longitude: number;
@@ -6,11 +6,11 @@ interface LatestPosition {
     speed: number;
 }
 
-interface MapDataPoint {
+interface MapDataObject {
     identifier: string;
-    latestPosition?: LatestPosition;
+    position?: Position;
 }
 
-type MapData = MapDataPoint[];
+type MapData = MapDataObject[];
 
-export { LatestPosition, MapDataPoint, MapData };
+export { Position, MapDataObject, MapData };
