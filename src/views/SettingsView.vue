@@ -1,22 +1,5 @@
 <template>
-    <div>
-        <span>{{ data }}</span>
-    </div>
+    <h1>Settings</h1>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { socket, socketState } from '@/socket';
-
-export default defineComponent({
-    name: 'SettingsView',
-    computed: {
-        data() {
-            return socketState.payload;
-        },
-    },
-    beforeUnmount() {
-        socket.disconnect();
-    },
-});
-</script>
+<script setup lang="ts"></script>

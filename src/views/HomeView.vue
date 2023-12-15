@@ -4,12 +4,9 @@
 
 <script setup lang="ts">
 import MapInteractive from '@/components/Home/MapInteractive.vue';
-import { onBeforeUnmount } from 'vue';
-import { socket, socketState } from '@/socket';
+import { requestData } from '@/socket';
 
-onBeforeUnmount(() => {
-    socket.disconnect();
-});
+requestData();
 </script>
 
 <style scoped lang="scss"></style>

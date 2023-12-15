@@ -32,14 +32,14 @@ function animateMap() {
             padding: {
                 top: 0,
                 bottom: 0,
-                left: sideBarStore.isOpen ? 350 : 0,
+                left: sideBarStore.isOpen ? 300 : 0,
                 right: 0,
             },
         });
     }
 }
 
-function handleKeyRelease(event: any) {
+function handleKeyRelease(event: KeyboardEvent) {
     if (event.code == 'Escape') {
         sideBarStore.toggleSidebar();
     }
@@ -71,7 +71,7 @@ onMounted(() => {
                 padding: {
                     top: 0,
                     bottom: 0,
-                    left: 350,
+                    left: 300,
                     right: 0,
                 },
             });
@@ -83,6 +83,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    window.removeEventListener('keyup', handleKeyRelease);
+    sideBarStore.resetStateToInitial();
     if (mapInstance.value) {
         mapInstance.value.remove();
         mapInstance.value = undefined;
