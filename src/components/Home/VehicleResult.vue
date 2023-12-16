@@ -5,6 +5,7 @@
             <h4 class="taxi__identifier">{{ identifier }}</h4>
         </section>
         <p class="taxi__lastposition">{{ lastPosition }}</p>
+        <img class="taxi__lock" v-if="active" src="@/assets/locked_icon.png" alt="View locked icon" height="24" width="24" />
     </article>
 </template>
 
@@ -49,6 +50,7 @@ function handleSelect() {
     justify-content: space-between;
     flex-direction: column;
     user-select: none;
+    position: relative;
     &.taxi--disabled {
         cursor: not-allowed;
     }
@@ -56,6 +58,14 @@ function handleSelect() {
     &.taxi--focused {
         background-color: #1c1b24;
         border-color: #007afb;
+    }
+
+    .taxi__lock {
+        position: absolute;
+        right: -12px;
+        top: 0;
+        bottom: 0;
+        margin: auto 0;
     }
 
     .taxi__top {

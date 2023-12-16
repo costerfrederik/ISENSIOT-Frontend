@@ -1,7 +1,14 @@
 <template>
     <section class="mapContainer">
-        <MapVehicles @onSelect="handleOnLock"></MapVehicles>
-        <span @click="sideBarStore.toggleSidebar">Press <b>Escape</b> to {{ sideBarStore.isOpen ? 'close' : 'open' }} sidemenu</span>
+        <MapVehicles></MapVehicles>
+        <div>
+            <span class="map__link" @click="sideBarStore.toggleSidebar"
+                >Press <b>Escape</b> to {{ sideBarStore.isOpen ? 'close' : 'open' }} sidemenu</span
+            >
+            <span class="map__link link--disabled"
+                >Mode: <b>{{ mapStore.lockedMapObject ? 'Follow' : 'Free Roam' }}</b></span
+            >
+        </div>
         <section class="mapPlaceHolder" ref="mapPlaceHolder"></section>
     </section>
 </template>
@@ -26,26 +33,6 @@ function handleKeyRelease(event: KeyboardEvent) {
     }
 }
 
-function handleOnLock(lockedMapObject: MapDataObject | undefined) {
-    if (!mapStore.mapInstance) {
-        return;
-    }
-    if (lockedMapObject == undefined) {
-        mapStore.mapInstance.stop();
-        return;
-    }
-    if (!lockedMapObject.position) {
-        return;
-    }
-
-    mapStore.mapInstance.flyTo({
-        center: [lockedMapObject.position.longitude, lockedMapObject.position.latitude],
-        zoom: 17,
-        speed: 0.9,
-        essential: true,
-    });
-}
-
 function addMarkersToMap(mapDataObjects: MapDataObject[]) {
     mapDataObjects.forEach((mapDataObject: MapDataObject) => {
         if (!mapStore.mapInstance || !mapDataObject.position) {
@@ -54,10 +41,6 @@ function addMarkersToMap(mapDataObjects: MapDataObject[]) {
 
         const markerElement = document.createElement('div');
         markerElement.className = 'marker';
-
-        markerElement.addEventListener('click', () => {
-            handleOnLock(mapDataObject);
-        });
 
         const marker = new mapboxgl.Marker(markerElement, {
             scale: 0.6,
@@ -133,22 +116,30 @@ onUnmounted(() => {
         width: 100%;
     }
 
-    span {
-        font-size: 12px;
+    div {
         position: absolute;
-        color: white;
         z-index: 10000;
         bottom: 12px;
         left: 50%;
         transform: translateX(-50%);
+        display: flex;
+        gap: 5px;
+    }
+
+    .map__link {
+        font-size: 12px;
+        color: white;
         background-color: rgba(18, 18, 23, 0.9);
         border-radius: 8px;
         padding: 8px 12px;
-        cursor: pointer;
         transition: 0.3s;
         user-select: none; /* Standard syntax */
-        &:hover {
-            background-color: #007afb;
+        text-align: center;
+        &:not(.link--disabled) {
+            &:hover {
+                background-color: #007afb;
+                cursor: pointer;
+            }
         }
     }
 }

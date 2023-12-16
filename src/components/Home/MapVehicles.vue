@@ -62,18 +62,15 @@ const emit = defineEmits(['onSelect']);
 function handleOnSelect(mapObject: MapDataObject) {
     if (!mapStore.lockedMapObject) {
         mapStore.lockedMapObject = mapObject;
-        emit('onSelect', mapObject);
         return;
     }
 
     if (mapStore.lockedMapObject.identifier == mapObject.identifier) {
         mapStore.lockedMapObject = undefined;
-        emit('onSelect', undefined);
         return;
     }
 
     mapStore.lockedMapObject = mapObject;
-    emit('onSelect', mapObject);
 }
 
 function lastPositionFormatted(position: Position | undefined) {
