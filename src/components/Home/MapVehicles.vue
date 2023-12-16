@@ -2,7 +2,13 @@
     <section class="overview__list" :class="{ 'list--collapsed': !sideBarStore.isOpen }">
         <section class="list__filter">
             <h4>Filter</h4>
-            <input class="filter__searchbox" v-model="searchBoxQuery" type="text" name="searchbox" placeholder="Search Vehicles by identifier" />
+            <input
+                class="filter__searchbox"
+                v-model="mapStore.mapSearchQuery"
+                type="text"
+                name="searchbox"
+                placeholder="Search Vehicles by identifier"
+            />
             <h4 class="filter__title">Your vehicles</h4>
         </section>
         <VehicleResult
@@ -13,14 +19,14 @@
             :disabled="true"
         ></VehicleResult>
         <VehicleResult
-            v-else-if="!socketState.mapData || !socketState.mapData.length"
+            v-else-if="!mapStore.mapData || !mapStore.mapData.length"
             icon-name="notlinked_icon.png"
             identifier="No vehicles linked"
             last-position="Linked vehicles will be shown here. But you have none."
             :disabled="true"
         ></VehicleResult>
         <VehicleResult
-            v-else-if="!filteredMapObjects.length"
+            v-else-if="!mapStore.filteredMapData.length"
             icon-name="notfound_icon.png"
             identifier="No vehicles found"
             last-position="Your search query did not have any results."
@@ -28,11 +34,14 @@
         ></VehicleResult>
         <template v-else>
             <VehicleResult
-                v-for="mapObject in filteredMapObjects"
+                v-for="mapObject in mapStore.filteredMapData"
                 v-bind:key="mapObject.identifier"
                 :icon-name="mapObject.position ? 'taxi_icon.png' : 'warning_icon.png'"
                 :identifier="mapObject.identifier"
                 :last-position="lastPositionFormatted(mapObject.position)"
+                @onSelect="handleOnSelect(mapObject)"
+                :active="mapObject.identifier == mapStore.lockedMapObject?.identifier"
+                :disabled="!mapObject.position"
             ></VehicleResult>
         </template>
     </section>
@@ -40,21 +49,29 @@
 
 <script setup lang="ts">
 import VehicleResult from '@/components/Home/VehicleResult.vue';
-import { socketState } from '@/socket';
-import { onMounted, ref } from 'vue';
-import { computed } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { Position, MapDataObject } from '@/interfaces/MapData';
 import { useSideBarStore } from '@/stores/sidebar';
+import { useMapStore } from '@/stores/map';
 const sideBarStore = useSideBarStore();
+const mapStore = useMapStore();
 
-const searchBoxQuery = ref('');
 const vehiclesLoading = ref(true);
+const emit = defineEmits(['onSelect']);
 
-const filteredMapObjects = computed(() => {
-    return socketState.mapData.filter((mapObject: MapDataObject) => {
-        return mapObject.identifier.toLowerCase().trim().includes(searchBoxQuery.value.toLowerCase().trim());
-    });
-});
+function handleOnSelect(mapObject: MapDataObject) {
+    if (!mapStore.lockedMapObject) {
+        mapStore.lockedMapObject = mapObject;
+        return;
+    }
+
+    if (mapStore.lockedMapObject.identifier == mapObject.identifier) {
+        mapStore.lockedMapObject = undefined;
+        return;
+    }
+
+    mapStore.lockedMapObject = mapObject;
+}
 
 function lastPositionFormatted(position: Position | undefined) {
     if (!position) {
@@ -63,6 +80,13 @@ function lastPositionFormatted(position: Position | undefined) {
     const datetime = new Date(position.datetime).toLocaleString('nl-nl');
     return `Last position: ${datetime}`;
 }
+
+watch(
+    () => sideBarStore.isOpen,
+    (newValue) => {
+        mapStore.toggleMapPadding(newValue);
+    }
+);
 
 onMounted(() => {
     setTimeout(() => {

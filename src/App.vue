@@ -23,8 +23,21 @@ body {
     height: 100%;
 }
 
-// Used to remove blue border from mapboxgl map when pressing key
+// Styling for mapboxgl
 canvas {
     outline: none !important;
+}
+
+.marker {
+    background-image: url('/src/assets/marker_icon.png');
+    background-color: #121217;
+    background-size: 80%;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 2px solid #161a1d;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
 }
 </style>
