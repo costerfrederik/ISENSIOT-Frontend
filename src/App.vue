@@ -39,5 +39,9 @@ canvas {
     width: 40px;
     height: 40px;
     cursor: pointer;
+    transition: border-color 0.3s;
+    &.marker--active {
+        border-color: #007afb;
+    }
 }
 </style>
