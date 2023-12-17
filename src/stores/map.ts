@@ -13,7 +13,9 @@ export const useMapStore = defineStore('map', () => {
     const lockedMapObject: Ref<MapDataObject | undefined> = ref();
 
     // Watcher that calls method when lockedMapObject changes
-    watch(lockedMapObject, onMapObjectLock);
+    watch(lockedMapObject, (newLockedMapObject, prevLockedMapObject) => {
+        onMapObjectLock(prevLockedMapObject);
+    });
 
     // Method that sets map data, and removes all markers
     function setMapData(mapDataObjects: MapDataObject[]) {
@@ -36,7 +38,7 @@ export const useMapStore = defineStore('map', () => {
     }
 
     // Method that zooms into locked map object
-    function onMapObjectLock() {
+    function onMapObjectLock(prevLockedMapObject: MapDataObject | undefined) {
         if (!mapInstance.value) {
             return;
         }
@@ -58,6 +60,13 @@ export const useMapStore = defineStore('map', () => {
         }
 
         if (!lockedMapObject.value.position) {
+            return;
+        }
+
+        if (
+            prevLockedMapObject?.position?.latitude == lockedMapObject.value.position.latitude &&
+            prevLockedMapObject?.position?.longitude == lockedMapObject.value.position.longitude
+        ) {
             return;
         }
 
