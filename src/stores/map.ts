@@ -18,6 +18,19 @@ export const useMapStore = defineStore('map', () => {
     // Method that sets map data, and removes all markers
     function setMapData(mapDataObjects: MapDataObject[]) {
         mapData.value = mapDataObjects;
+
+        if (lockedMapObject.value) {
+            const newLockedMapObject = mapDataObjects.find((mapDataObject) => {
+                return mapDataObject.identifier == lockedMapObject.value?.identifier;
+            });
+
+            if (!newLockedMapObject || !newLockedMapObject.position) {
+                lockedMapObject.value = undefined;
+            } else {
+                lockedMapObject.value = newLockedMapObject;
+            }
+        }
+
         removeAllMapMarkers();
         centerLockedMapObject();
     }
