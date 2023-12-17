@@ -41,6 +41,17 @@ export const useMapStore = defineStore('map', () => {
             return;
         }
 
+        // Add active border to marker if object in lockedMapObject
+        mapMarkers.value.forEach((marker: Marker) => {
+            const lockedLatitude = lockedMapObject.value?.position?.latitude;
+            const lockedLongitude = lockedMapObject.value?.position?.longitude;
+            if (marker.getLngLat().lat == lockedLatitude && marker.getLngLat().lng == lockedLongitude) {
+                marker.getElement().classList.add('marker--active');
+            } else {
+                marker.getElement().classList.remove('marker--active');
+            }
+        });
+
         if (!lockedMapObject.value) {
             mapInstance.value.stop();
             return;
@@ -118,6 +129,7 @@ export const useMapStore = defineStore('map', () => {
             mapInstance.value.remove();
             mapInstance.value = undefined;
         }
+        mapMarkers.value = [];
         mapSearchQuery.value = '';
         lockedMapObject.value = undefined;
     }
