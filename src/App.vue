@@ -44,4 +44,36 @@ canvas {
         border-color: #007afb;
     }
 }
+
+/* Marker tweaks */
+.mapboxgl-popup-content {
+    border-radius: 12px;
+    padding: 12px;
+    width: 180px;
+}
+
+.mapboxgl-popup-content {
+    .popup-inner {
+        display: flex;
+        flex-direction: column;
+        h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+        span {
+            margin: 0;
+            font-weight: 400;
+        }
+        button {
+            margin-top: 12px;
+            background-color: #007afb;
+            border: 2px solid #007afb;
+            border-radius: 8px;
+            padding: 8px 24px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    }
+}
 </style>
