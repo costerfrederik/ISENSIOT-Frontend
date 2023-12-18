@@ -133,41 +133,41 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .mapContainer {
-    position: relative;
-    height: calc(100vh - 70px);
+  position: relative;
+  height: calc(100vh - 70px);
+  width: 100%;
+
+  .mapPlaceHolder {
+    position: absolute;
+    height: 100%;
     width: 100%;
+  }
 
-    .mapPlaceHolder {
-        position: absolute;
-        height: 100%;
-        width: 100%;
-    }
+  div {
+    position: absolute;
+    z-index: 10000;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+  }
 
-    div {
-        position: absolute;
-        z-index: 10000;
-        bottom: 12px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 5px;
-    }
-
-    .map__link {
-        font-size: 12px;
-        color: white;
-        background-color: rgba(18, 18, 23, 0.9);
-        border-radius: 8px;
-        padding: 8px 12px;
-        transition: 0.3s;
-        user-select: none; /* Standard syntax */
-        text-align: center;
-        &:not(.link--disabled) {
-            &:hover {
-                background-color: #007afb;
-                cursor: pointer;
-            }
+  .map__link {
+      font-size: 12px;
+      color: white;
+      background-color: rgba(18, 18, 23, 0.9);
+      border-radius: 8px;
+      padding: 8px 12px;
+      transition: 0.3s;
+      user-select: none; /* Standard syntax */
+      text-align: center;
+      &:not(.link--disabled) {
+        &:hover {
+            background-color: #007afb;
+            cursor: pointer;
         }
-    }
+      }
+   }
 }
 </style>
