@@ -13,20 +13,50 @@ export const useMapStore = defineStore('map', () => {
     const lockedMapObject: Ref<MapDataObject | undefined> = ref();
 
     // Watcher that calls method when lockedMapObject changes
-    watch(lockedMapObject, onMapObjectLock);
+    watch(lockedMapObject, (newLockedMapObject, prevLockedMapObject) => {
+        onMapObjectLock(prevLockedMapObject);
+    });
 
     // Method that sets map data, and removes all markers
     function setMapData(mapDataObjects: MapDataObject[]) {
         mapData.value = mapDataObjects;
+
+        if (lockedMapObject.value) {
+            const newLockedMapObject = mapDataObjects.find((mapDataObject) => {
+                return mapDataObject.identifier == lockedMapObject.value?.identifier;
+            });
+
+            if (!newLockedMapObject || !newLockedMapObject.position) {
+                lockedMapObject.value = undefined;
+            } else {
+                lockedMapObject.value = newLockedMapObject;
+            }
+        }
+
         removeAllMapMarkers();
         centerLockedMapObject();
     }
 
     // Method that zooms into locked map object
-    function onMapObjectLock() {
+    function onMapObjectLock(prevLockedMapObject: MapDataObject | undefined) {
         if (!mapInstance.value) {
             return;
         }
+
+        // Add active border to marker if object in lockedMapObject
+        mapMarkers.value.forEach((marker: Marker) => {
+            const lockedLatitude = lockedMapObject.value?.position?.latitude;
+            const lockedLongitude = lockedMapObject.value?.position?.longitude;
+            if (marker.getLngLat().lat == lockedLatitude && marker.getLngLat().lng == lockedLongitude) {
+                marker.getElement().classList.add('marker--active');
+                if (mapInstance.value) {
+                    marker.getPopup().addTo(mapInstance.value);
+                }
+            } else {
+                marker.getElement().classList.remove('marker--active');
+                marker.getPopup().remove();
+            }
+        });
 
         if (!lockedMapObject.value) {
             mapInstance.value.stop();
@@ -34,6 +64,13 @@ export const useMapStore = defineStore('map', () => {
         }
 
         if (!lockedMapObject.value.position) {
+            return;
+        }
+
+        if (
+            prevLockedMapObject?.position?.latitude == lockedMapObject.value.position.latitude &&
+            prevLockedMapObject?.position?.longitude == lockedMapObject.value.position.longitude
+        ) {
             return;
         }
 
@@ -105,6 +142,7 @@ export const useMapStore = defineStore('map', () => {
             mapInstance.value.remove();
             mapInstance.value = undefined;
         }
+        mapMarkers.value = [];
         mapSearchQuery.value = '';
         lockedMapObject.value = undefined;
     }

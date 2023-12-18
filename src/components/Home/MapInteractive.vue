@@ -21,6 +21,7 @@ import type { Ref } from 'vue';
 import MapVehicles from '@/components/Home/MapVehicles.vue';
 import { MapDataObject } from '@/interfaces/MapData';
 import { useMapStore } from '@/stores/map';
+import router from '@/router';
 
 const sideBarStore = useSideBarStore();
 const mapStore = useMapStore();
@@ -39,14 +40,40 @@ function addMarkersToMap(mapDataObjects: MapDataObject[]) {
             return;
         }
 
+        // Create popup element
+        const popupElement = document.createElement('div');
+        const titleElement = document.createElement('h3');
+        const speedElement = document.createElement('span');
+        const buttonElement = document.createElement('button');
+        popupElement.className = 'popup-inner';
+        titleElement.textContent = mapDataObject.identifier;
+        speedElement.textContent = `GPS speed: ${mapDataObject.position.speed} km/h`;
+        buttonElement.textContent = 'Dashboard';
+        popupElement.appendChild(titleElement);
+        popupElement.appendChild(speedElement);
+        popupElement.appendChild(buttonElement);
+
+        buttonElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            router.push(`/dashboard/${mapDataObject.identifier}`);
+        });
+
+        // Create new popup based on element
+        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false, focusAfterOpen: false }).setDOMContent(popupElement);
+
+        // Create marker
         const markerElement = document.createElement('div');
         markerElement.className = 'marker';
 
+        // Create marker and link popup with marker
         const marker = new mapboxgl.Marker(markerElement, {
             scale: 0.6,
         })
             .setLngLat([mapDataObject.position.longitude, mapDataObject.position.latitude])
+            .setPopup(popup)
             .addTo(mapStore.mapInstance);
+
+        // Add all markers to store state
         mapStore.mapMarkers.push(marker);
     });
 }
