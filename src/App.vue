@@ -47,6 +47,8 @@ canvas {
 
 /* Marker tweaks */
 .mapboxgl-popup-content {
+    transform: perspective(1px) translateZ(0);
+    backface-visibility: hidden;
     border-radius: 12px;
     padding: 12px;
     width: 180px;
