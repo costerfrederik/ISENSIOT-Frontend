@@ -15,7 +15,7 @@ const routes: Array<RouteRecordRaw> = [
     component: SettingsView,
   },
   {
-    path: "/dashboard/taxi/:id",
+    path: "/dashboard/taxi/:identifier",
     name: "dashboard",
     component: DashboardView,
   },
