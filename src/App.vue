@@ -50,9 +50,6 @@ canvas {
     border-radius: 12px;
     padding: 12px;
     width: 180px;
-}
-
-.mapboxgl-popup-content {
     .popup-inner {
         display: flex;
         flex-direction: column;
