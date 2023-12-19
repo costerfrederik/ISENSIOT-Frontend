@@ -5,11 +5,19 @@
             <router-link to="/settings" class="nav__link" active-class="link--active">Settings</router-link>
         </nav>
         <span class="header__divider"></span>
-        <button class="header__action">Add new taxi</button>
+        <button class="header__action" @click="openModal">Add new taxi</button>
     </header>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import MockModal from './modals/MockModal.vue';
+import { useModalStore } from '@/stores/modal';
+const modalStore = useModalStore();
+
+function openModal() {
+    modalStore.openModal({ component: MockModal });
+}
+</script>
 
 <style scoped lang="scss">
 .header {
