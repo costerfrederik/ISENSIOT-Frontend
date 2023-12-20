@@ -13,6 +13,9 @@
 
 <script setup lang="ts">
 import MapHistory from "@/components/Dashboard/MapHistory.vue";
+import { requestData } from '@/socket';
+
+requestData();
 </script>
 
 <style scoped lang="scss">

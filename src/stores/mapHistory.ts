@@ -13,14 +13,11 @@ export const useMapHistoryStore = defineStore("mapHistory", () => {
 
   watch(mapIdentifier, test);
 
-  function test() {
+  function test() {    
     const test = mapStore.mapData.find((mapDataObject: MapDataObject) => {
       return mapDataObject.identifier == mapIdentifier.value;
     });
-    console.log(test);
   }
-
-  console.log(mapStore.mapData);
 
   // Method that sets map data, and removes all markers
   //   function setMapData(mapDataObjects: MapDataObject[]) {

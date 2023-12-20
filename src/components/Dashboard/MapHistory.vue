@@ -11,9 +11,12 @@ import type { Ref } from "vue";
 import { MapDataObject } from "@/interfaces/MapData";
 import { useMapHistoryStore } from "@/stores/mapHistory";
 import { useRoute } from "vue-router";
+import {useMapStore} from "@/stores/map"
 const route = useRoute();
 
 const mapHistoryStore = useMapHistoryStore();
+const mapStore = useMapStore();
+
 mapboxgl.accessToken =
   "pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xxMzNyeno0MDhhMDJqbzRyc3Z0NnN2cCJ9.8X6v6K23BdJpsN_1-J9Ccg";
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
@@ -72,16 +75,17 @@ onMounted(async () => {
 
   mapHistoryStore.mapInstance = map;
   const mapIdentifier = route.params.identifier;
+
   if (mapIdentifier) {
-    mapHistoryStore.mapIdentifier = mapIdentifier.toString();
+    mapHistoryStore.mapIdentifier = mapIdentifier.toString();    
   }
-  // watch(
-  //   () => mapHistoryStore.mapData,
-  //   (mapDataObjects: MapDataObject[]) => {
-  //     addMarkersToMap(mapDataObjects);
-  //   },
-  //   { immediate: true }
-  // );
+  watch(
+    () => mapStore.mapData,
+    (mapDataObjects: MapDataObject[]) => {
+      addMarkersToMap(mapDataObjects);
+    },
+    { immediate: true }
+  );
 });
 
 onUnmounted(() => {
