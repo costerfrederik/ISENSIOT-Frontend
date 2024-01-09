@@ -22,7 +22,6 @@ const mapStore = useMapStore();
 
 const props = defineProps({
   identifier: {
-    type: String,
     required: true,
   }
 })

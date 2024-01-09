@@ -10,6 +10,7 @@ export const useMapHistoryStore = defineStore("mapHistory", () => {
   const mapInstance: Ref<mapboxgl.Map | undefined> = ref();
   const mapIdentifier: Ref<string | undefined> = ref();
   const mapMarkers: Ref<Marker[]> = ref([]);
+  const mapData: Ref<MapDataObject[]> = ref([]);
 
   watch(mapIdentifier, test);
 
@@ -20,11 +21,11 @@ export const useMapHistoryStore = defineStore("mapHistory", () => {
   }
 
   // Method that sets map data, and removes all markers
-  //   function setMapData(mapDataObjects: MapDataObject[]) {
-  //     mapData.value = mapDataObjects;
+    function setMapData(mapDataObjects: MapDataObject[]) {
+      mapData.value = mapDataObjects;
 
-  //     removeAllMapMarkers();
-  //   }
+      removeAllMapMarkers();
+    }
 
   // Method that removes all markers from map
   function removeAllMapMarkers() {
@@ -46,7 +47,7 @@ export const useMapHistoryStore = defineStore("mapHistory", () => {
     mapInstance,
     mapIdentifier,
     mapMarkers,
-    // setMapData,
+    setMapData,
     removeAllMapMarkers,
     resetStateToInitial,
   };

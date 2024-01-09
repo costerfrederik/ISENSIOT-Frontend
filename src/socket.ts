@@ -2,6 +2,8 @@ import { reactive } from 'vue';
 import { io } from 'socket.io-client';
 import { MapDataObject } from './interfaces/MapData';
 import { useMapStore } from '@/stores/map';
+import { useMapHistoryStore
+ } from './stores/mapHistory';
 
 // You can specify here the url for the sockets backend
 const url = 'http://localhost:3000';
@@ -20,7 +22,18 @@ socket.on('refresh_needed', (payload: MapDataObject[]) => {
     mapStore.setMapData(payload);
 });
 
+socket.on('refresh_needed_history', (payload: MapDataObject[]) => {
+    const mapStore = useMapHistoryStore();
+    mapStore.setMapData(payload);
+});
+
 // Manually refresh map data
 export function requestData() {
     socket.emit('data_request');
+}
+
+export function requestDataHistory(identifier: string) {
+    console.log(identifier);
+    
+    socket.emit('data_request_history', identifier);
 }

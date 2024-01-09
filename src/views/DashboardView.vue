@@ -13,9 +13,11 @@
 
 <script setup lang="ts">
 import MapHistory from "@/components/Dashboard/MapHistory.vue";
-import { requestData } from '@/socket';
+import { requestDataHistory } from '@/socket';
+import { useRoute } from "vue-router";
+const route = useRoute();
 
-requestData();
+requestDataHistory(route.params.identifier.toString());
 </script>
 
 <style scoped lang="scss">
