@@ -2,6 +2,9 @@
   <section class="mapContainer">
     <section class="mapPlaceHolder" ref="mapPlaceHolder"></section>
   </section>
+  <h1>{{ mapSlider }}</h1>
+  <input class="mapSlider" type="range" min="1" max="30" step="1" v-model="mapSlider">
+
 </template>
 
 <script setup lang="ts">
@@ -17,13 +20,29 @@ const route = useRoute();
 const mapHistoryStore = useMapHistoryStore();
 const mapStore = useMapStore();
 
+const props = defineProps({
+  identifier: {
+    type: String,
+    required: true,
+  }
+})
+
 mapboxgl.accessToken =
   "pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xxMzNyeno0MDhhMDJqbzRyc3Z0NnN2cCJ9.8X6v6K23BdJpsN_1-J9Ccg";
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
+const mapSlider: Ref<HTMLElement | null> = ref(null);
 
 function addMarkersToMap(mapDataObjects: MapDataObject[]) {
-  mapDataObjects.forEach((mapDataObject: MapDataObject) => {
-    if (!mapHistoryStore.mapInstance || !mapDataObject.position) {
+  const filteredMapDataObjects = mapDataObjects.find((mapDataObject: MapDataObject) => {
+    return mapDataObject.identifier == props.identifier;
+  })
+
+  if(!filteredMapDataObjects){
+    return;
+  }
+
+  
+  if (!mapHistoryStore.mapInstance || !filteredMapDataObjects.position) {
       return;
     }
 
@@ -36,14 +55,13 @@ function addMarkersToMap(mapDataObjects: MapDataObject[]) {
       scale: 0.6,
     })
       .setLngLat([
-        mapDataObject.position.longitude,
-        mapDataObject.position.latitude,
+      filteredMapDataObjects.position.longitude,
+      filteredMapDataObjects.position.latitude,
       ])
       .addTo(mapHistoryStore.mapInstance);
 
     // Add all markers to store state
     mapHistoryStore.mapMarkers.push(marker);
-  });
 }
 
 onMounted(async () => {
@@ -94,6 +112,12 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+
+.mapSlider {
+  width: 100%;
+  margin: 0;
+  padding: 12px 0;
+}
 .mapContainer {
   position: relative;
   height: 50vh;

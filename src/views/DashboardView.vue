@@ -6,7 +6,7 @@
   <section id="containerWrapper">
     <section id="cameraFeedContainer"></section>
     <section id="taxiHistoryContainer">
-      <MapHistory></MapHistory>
+      <MapHistory :identifier="$route.params.identifier"></MapHistory>
     </section>
   </section>
 </template>
