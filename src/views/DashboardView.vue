@@ -1,12 +1,15 @@
 <template>
     <section id="containerWrapper">
+        <section id="taxiLocationContainer">
+            <MapLocation :identifier="identifierFromUrl"></MapLocation>
+        </section>
         <section id="cameraFeedContainer">
             <article>
                 <router-link to="/" class="nav__link">← Back to live map</router-link>
                 <h1>{{ identifierFromUrl }}</h1>
                 <p>Dashboard overview for taxi with unique identifier: {{ identifierFromUrl }}</p>
             </article>
-            <div class="video"></div>
+            <video src="" class="video" controls autoplay></video>
             <article class="information">
                 <h3 class="information__title">Information:</h3>
                 <article class="information__card">
@@ -18,9 +21,6 @@
                     <p class="card__value">{{ lastSpeed }}</p>
                 </article>
             </article>
-        </section>
-        <section id="taxiLocationContainer">
-            <MapLocation :identifier="identifierFromUrl"></MapLocation>
         </section>
     </section>
 </template>
@@ -60,25 +60,13 @@ onMounted(() => {
 
 <style scoped lang="scss">
 #containerWrapper {
-    display: flex;
-    height: calc(100vh - 70px);
-    overflow-y: auto;
-
-    #cameraFeedContainer,
     #taxiLocationContainer {
-        flex: 4;
-    }
-
-    #taxiLocationContainer {
-        position: sticky;
-        top: 0;
+        height: 300px;
     }
 
     #cameraFeedContainer {
-        background-color: white;
-        padding: 48px;
+        padding: 48px 24px;
         display: flex;
-        flex: 2;
         flex-direction: column;
         gap: 24px;
 
@@ -106,8 +94,8 @@ onMounted(() => {
         }
 
         .video {
+            aspect-ratio: 16/9;
             width: 100%;
-            min-height: 20vw;
             background-color: black;
             border-radius: 12px;
             margin-bottom: 24px;
@@ -117,7 +105,6 @@ onMounted(() => {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            padding-bottom: 48px;
 
             .information__title {
                 margin: 0;
@@ -145,6 +132,37 @@ onMounted(() => {
                     color: black;
                 }
             }
+        }
+    }
+
+    @media only screen and (min-width: 968px) {
+        display: flex;
+        flex-direction: row-reverse;
+        height: calc(100vh - 70px);
+        overflow-y: auto;
+
+        #cameraFeedContainer {
+            flex: 1;
+            padding: 48px;
+
+            .information {
+                padding-bottom: 48px;
+            }
+        }
+        #taxiLocationContainer {
+            flex: 1;
+            height: auto;
+            position: sticky;
+            top: 0;
+        }
+    }
+
+    @media only screen and (min-width: 1200px) {
+        #cameraFeedContainer {
+            flex: 2;
+        }
+        #taxiLocationContainer {
+            flex: 4;
         }
     }
 }
