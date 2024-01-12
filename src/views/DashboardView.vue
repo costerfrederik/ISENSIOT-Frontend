@@ -1,44 +1,151 @@
 <template>
-  <section>
-    <h1>Dashboard {{ $route.params.identifier }}</h1>
-  </section>
-
-  <section id="containerWrapper">
-    <section id="cameraFeedContainer"></section>
-    <section id="taxiHistoryContainer">
-      <MapHistory :identifier="$route.params.identifier"></MapHistory>
+    <section id="containerWrapper">
+        <section id="cameraFeedContainer">
+            <article>
+                <router-link to="/" class="nav__link">← Back to live map</router-link>
+                <h1>{{ identifierFromUrl }}</h1>
+                <p>Dashboard overview for taxi with unique identifier: {{ identifierFromUrl }}</p>
+            </article>
+            <div class="video"></div>
+            <article class="information">
+                <h3 class="information__title">Information:</h3>
+                <article class="information__card">
+                    <p class="card__title">Last position registered:</p>
+                    <p class="card__value">{{ lastPosition }}</p>
+                </article>
+                <article class="information__card">
+                    <p class="card__title">GPS Speed:</p>
+                    <p class="card__value">{{ lastSpeed }}</p>
+                </article>
+            </article>
+        </section>
+        <section id="taxiLocationContainer">
+            <MapLocation :identifier="identifierFromUrl"></MapLocation>
+        </section>
     </section>
-  </section>
 </template>
 
 <script setup lang="ts">
-import MapHistory from "@/components/Dashboard/MapHistory.vue";
-import { requestDataHistory } from '@/socket';
-import { useRoute } from "vue-router";
+import MapLocation from '@/components/Dashboard/MapLocation.vue';
+import { requestData } from '@/socket';
+import { computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { useMapStore } from '@/stores/map';
 const route = useRoute();
+const mapStore = useMapStore();
 
-requestDataHistory(route.params.identifier.toString());
+const identifierFromUrl = computed(() => {
+    return route.params.identifier.toString();
+});
+
+const lastPosition = computed(() => {
+    if (!mapStore.lockedMapObject || !mapStore.lockedMapObject.position) {
+        return 'Never';
+    }
+
+    return new Date(mapStore.lockedMapObject.position.datetime).toLocaleString('nl-nl');
+});
+
+const lastSpeed = computed(() => {
+    if (!mapStore.lockedMapObject || !mapStore.lockedMapObject.position) {
+        return '0 km/h';
+    }
+    return `${mapStore.lockedMapObject.position.speed} km/h`;
+});
+
+onMounted(() => {
+    requestData();
+});
 </script>
 
 <style scoped lang="scss">
 #containerWrapper {
-  padding: 0 24px;
-  display: flex;
-  gap: 20px;
-}
-#cameraFeedContainer {
-  height: 50vh;
-  flex: 1;
-  background-color: black;
-}
+    display: flex;
+    height: calc(100vh - 70px);
+    overflow-y: auto;
 
-#taxiHistoryContainer {
-  flex: 1;
-  height: 50vh;
-  background-color: blue;
-}
+    #cameraFeedContainer,
+    #taxiLocationContainer {
+        flex: 4;
+    }
 
-h1 {
-  padding: 24px;
+    #taxiLocationContainer {
+        position: sticky;
+        top: 0;
+    }
+
+    #cameraFeedContainer {
+        background-color: white;
+        padding: 48px;
+        display: flex;
+        flex: 2;
+        flex-direction: column;
+        gap: 24px;
+
+        article {
+            .nav__link {
+                display: inline-block;
+                margin: 0 0 24px 0;
+                font-size: 14px;
+                text-decoration: none;
+                color: #007afb;
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            h1 {
+                font-size: 30px;
+                margin: 0 0 5px 0;
+            }
+
+            p {
+                margin: 0;
+                color: #717171;
+            }
+        }
+
+        .video {
+            width: 100%;
+            min-height: 20vw;
+            background-color: black;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .information {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 48px;
+
+            .information__title {
+                margin: 0;
+            }
+
+            .information__card {
+                background-color: #fafafa;
+                border: 2px solid #f3f3f3;
+                margin: 0;
+                padding: 24px;
+                border-radius: 12px;
+                min-height: 100px;
+                display: flex;
+                flex-direction: column;
+
+                .card__title {
+                    font-weight: 500;
+                    margin-bottom: 12px;
+                    font-size: 14px;
+                }
+
+                .card__value {
+                    font-size: 22px;
+                    font-weight: bold;
+                    color: black;
+                }
+            }
+        }
+    }
 }
 </style>
