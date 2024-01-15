@@ -9,7 +9,13 @@
                 <h1>{{ identifierFromUrl }}</h1>
                 <p>Dashboard overview for taxi with unique identifier: {{ identifierFromUrl }}</p>
             </article>
-            <video src="" class="video" controls autoplay></video>
+
+            <video class="video-js"></video>
+
+            <!-- <video id="my-video" class="video-js" preload="auto" data-setup="{}" controls autoplay>
+                <source :src="'http://37.97.206.253:8888/' + identifierFromUrl + '/index.m3u8'" type="application/x-mpegURL" />
+            </video> -->
+
             <article class="information">
                 <h3 class="information__title">Information:</h3>
                 <article class="information__card">
@@ -28,7 +34,7 @@
 <script setup lang="ts">
 import MapLocation from '@/components/Dashboard/MapLocation.vue';
 import { requestData } from '@/socket';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMapStore } from '@/stores/map';
 const route = useRoute();
@@ -93,7 +99,7 @@ onMounted(() => {
             }
         }
 
-        .video {
+        video {
             aspect-ratio: 16/9;
             width: 100%;
             background-color: black;
