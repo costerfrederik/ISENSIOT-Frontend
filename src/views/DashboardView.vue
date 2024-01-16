@@ -9,15 +9,7 @@
                 <h1>{{ identifierFromUrl }}</h1>
                 <p>Dashboard overview for taxi with unique identifier: {{ identifierFromUrl }}</p>
             </article>
-
-            <VideoPlayer :options="VideoOptions"></VideoPlayer>
-
-            <!-- <video ref="videoPlayer" class="video-js"></video> -->
-
-            <!-- <video id="my-video" class="video-js" preload="auto" data-setup="{}" controls autoplay>
-                <source :src="'http://37.97.206.253:8888/' + identifierFromUrl + '/index.m3u8'" type="application/x-mpegURL" />
-            </video> -->
-
+            <DashboardVideo :options="VideoOptions" :identifier="identifierFromUrl"></DashboardVideo>
             <article class="information">
                 <h3 class="information__title">Information:</h3>
                 <article class="information__card">
@@ -34,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import VideoPlayer from '@/components/Dashboard/VideoPlayer.vue';
+import DashboardVideo from '@/components/Dashboard/DashboardVideo.vue';
 import MapLocation from '@/components/Dashboard/MapLocation.vue';
 import { requestData } from '@/socket';
 import { computed, onMounted, ref } from 'vue';
@@ -44,9 +36,18 @@ const route = useRoute();
 const mapStore = useMapStore();
 
 const VideoOptions = ref({
-    autoplay: true,
+    autoplay: 'muted',
+    muted: true,
     controls: true,
     aspectRatio: '16:9',
+    preload: 'none',
+    liveui: true,
+    errorDisplay: false,
+    plugins: {
+        reloadSourceOnError: {
+            errorInterval: 2,
+        },
+    },
 });
 
 const identifierFromUrl = computed(() => {
