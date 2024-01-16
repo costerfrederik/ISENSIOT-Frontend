@@ -1,5 +1,4 @@
 <template>
-    <h1>{{ streamOnline }}</h1>
     <video ref="videoElement" id="video" class="video-js video" poster="@/assets/cameraLoading.png"></video>
 </template>
 
