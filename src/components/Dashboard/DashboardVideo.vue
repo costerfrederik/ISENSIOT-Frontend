@@ -1,11 +1,19 @@
 <template>
-    <video ref="videoElement" id="video" class="video-js video" poster="@/assets/cameraLoading.png"></video>
+    <video
+        ref="videoElement"
+        class="video"
+        poster="@/assets/cameraLoading.jpg"
+        @play="catchUpVideo"
+        autoplay
+        controls
+        muted
+        playsinline="true"
+    ></video>
 </template>
 
 <script setup lang="ts">
-import videojs from 'video.js';
-import Player from 'video.js/dist/types/player';
-import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue';
+import Hls from 'hls.js';
+import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
 
 const props = defineProps({
     options: {
@@ -19,84 +27,76 @@ const props = defineProps({
     },
 });
 
+const videoHls = ref<Hls | null>(null);
 const videoElement = ref<HTMLVideoElement | null>(null);
-const videoPlayer = ref<Player | null>(null);
-const intervalTimer = ref<number | undefined>();
-const streamOnline = ref<boolean>(false);
-const streamStatusInterval = 2000;
 
 const streamURL = computed(() => {
     return 'http://37.97.206.253:8888/' + props.identifier + '/index.m3u8';
 });
 
-async function isStreamOnline() {
-    try {
-        const response = await fetch(streamURL.value);
-        return response.ok;
-    } catch (error: any) {
-        return false;
+function handleVisibilityChange() {
+    if (!document.hidden) {
+        catchUpVideo();
     }
 }
 
-function handleStreamStatus(newStatus: boolean, oldStatus: boolean) {
-    if (newStatus && !oldStatus) {
-        const video = videojs.getPlayer('video');
-        video.src({
-            src: streamURL.value,
-            type: 'application/x-mpegURL',
-        });
+function catchUpVideo() {
+    if (videoElement.value) {
+        videoElement.value.currentTime = 0;
     }
+}
 
-    if (!newStatus && oldStatus) {
-        const video = videojs.getPlayer('video');
-        video.load(); // show poster
-        video.reset();
+function loadVideo() {
+    if (videoElement.value) {
+        if (Hls.isSupported()) {
+            videoHls.value = new Hls({
+                maxLiveSyncPlaybackRate: 1.5,
+            });
+
+            videoHls.value.on(Hls.Events.ERROR, (evt, data) => {
+                if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                    videoHls.value?.recoverMediaError();
+                } else if (data.fatal) {
+                    videoHls.value?.destroy();
+                    setTimeout(() => loadVideo(), 2000);
+                }
+            });
+
+            videoHls.value.on(Hls.Events.MEDIA_ATTACHED, () => {
+                videoHls.value?.loadSource(streamURL.value);
+            });
+
+            videoHls.value.on(Hls.Events.MANIFEST_PARSED, () => {
+                videoElement.value?.play();
+            });
+
+            videoHls.value.attachMedia(videoElement.value);
+        } else if (videoElement.value.canPlayType('application/vnd.apple.mpegurl')) {
+            fetch(streamURL.value).then(() => {
+                if (videoElement.value) {
+                    videoElement.value.src = streamURL.value;
+                    videoElement.value.play();
+                }
+            });
+        }
     }
 }
 
 onMounted(async () => {
-    watch(streamOnline, (newStatus, oldStatus) => {
-        handleStreamStatus(newStatus, oldStatus);
-    });
-
-    intervalTimer.value = setInterval(async () => {
-        streamOnline.value = await isStreamOnline();
-    }, streamStatusInterval);
-
-    if (videoElement.value) {
-        const newOptions = {
-            ...props.options,
-            sources: [
-                {
-                    src: streamURL.value,
-                    type: 'application/x-mpegURL',
-                },
-            ],
-        };
-        videoPlayer.value = videojs(videoElement.value, newOptions);
-    }
+    loadVideo();
 });
 
 onBeforeUnmount(() => {
-    if (videoPlayer.value) {
-        videoPlayer.value.dispose();
-    }
-
-    if (intervalTimer.value) {
-        clearInterval(intervalTimer.value);
-    }
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
 
 <style scoped lang="scss">
 .video {
-    overflow: hidden;
+    background-color: black;
+    aspect-ratio: 16/9;
     width: 100%;
     border-radius: 12px;
     margin-bottom: 24px;
-}
-
-.video-js.vjs-ended .vjs-poster {
-    display: block;
 }
 </style>

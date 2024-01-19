@@ -9,7 +9,7 @@
                 <h1>{{ identifierFromUrl }}</h1>
                 <p>Dashboard overview for taxi with unique identifier: {{ identifierFromUrl }}</p>
             </article>
-            <DashboardVideo :options="VideoOptions" :identifier="identifierFromUrl"></DashboardVideo>
+            <DashboardVideo :identifier="identifierFromUrl"></DashboardVideo>
             <article class="information">
                 <h3 class="information__title">Information:</h3>
                 <article class="information__card">
@@ -34,21 +34,6 @@ import { useRoute } from 'vue-router';
 import { useMapStore } from '@/stores/map';
 const route = useRoute();
 const mapStore = useMapStore();
-
-const VideoOptions = ref({
-    autoplay: 'muted',
-    muted: true,
-    controls: true,
-    aspectRatio: '16:9',
-    preload: 'none',
-    liveui: true,
-    errorDisplay: false,
-    plugins: {
-        reloadSourceOnError: {
-            errorInterval: 2,
-        },
-    },
-});
 
 const identifierFromUrl = computed(() => {
     return route.params.identifier.toString();
