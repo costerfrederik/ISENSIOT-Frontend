@@ -5,8 +5,11 @@
 <script setup lang="ts">
 import MapInteractive from '@/components/Home/MapInteractive.vue';
 import { requestData } from '@/socket';
+import { onMounted } from 'vue';
 
-requestData();
+onMounted(() => {
+    requestData();
+});
 </script>
 
 <style scoped lang="scss"></style>

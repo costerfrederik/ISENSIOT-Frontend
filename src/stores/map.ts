@@ -50,11 +50,15 @@ export const useMapStore = defineStore('map', () => {
             if (marker.getLngLat().lat == lockedLatitude && marker.getLngLat().lng == lockedLongitude) {
                 marker.getElement().classList.add('marker--active');
                 if (mapInstance.value) {
-                    marker.getPopup().addTo(mapInstance.value);
+                    if (marker.getPopup()) {
+                        marker.getPopup().addTo(mapInstance.value);
+                    }
                 }
             } else {
                 marker.getElement().classList.remove('marker--active');
-                marker.getPopup().remove();
+                if (marker.getPopup()) {
+                    marker.getPopup().remove();
+                }
             }
         });
 

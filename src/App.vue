@@ -16,6 +16,10 @@ body {
     overflow: hidden;
     margin: 0;
     height: 100%;
+
+    @media only screen and (max-width: 968px) {
+        overflow-y: auto;
+    }
 }
 * {
     font-family: 'Inter', sans-serif;
