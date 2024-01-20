@@ -3,6 +3,8 @@ import { io } from "socket.io-client";
 import { MapDataObject } from "./interfaces/MapData";
 import { useMapStore } from "@/stores/map";
 import { Taxi } from "./interfaces/Taxi";
+import { useErrorStore } from "@/stores/error";
+import { FormError } from "@/interfaces/FormError";
 
 // You can specify here the url for the sockets backend
 const url = "http://localhost:3000";
@@ -30,6 +32,8 @@ export function createTaxi(newTaxi: Taxi) {
   socket.emit("taxi_create", newTaxi);
 }
 
-socket.on("taxi_inserted", (response: string) => {
-  alert(response);
+socket.on("taxi_inserted", (response: FormError) => {
+  const formErrorStore = useErrorStore();
+
+  formErrorStore.error = response;
 });
