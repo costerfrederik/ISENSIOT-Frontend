@@ -7,7 +7,10 @@
             <article>
                 <router-link to="/" class="nav__link">← Back to live map</router-link>
                 <h1>{{ identifierFromUrl }}</h1>
-                <p>Dashboard overview for taxi with unique identifier: {{ identifierFromUrl }}</p>
+                <p>
+                    Dashboard overview for taxi with unique identifier:
+                    {{ identifierFromUrl }}
+                </p>
             </article>
             <DashboardVideo :identifier="identifierFromUrl"></DashboardVideo>
             <article class="information">
@@ -29,7 +32,7 @@
 import DashboardVideo from '@/components/Dashboard/DashboardVideo.vue';
 import MapLocation from '@/components/Dashboard/MapLocation.vue';
 import { requestData } from '@/socket';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMapStore } from '@/stores/map';
 const route = useRoute();

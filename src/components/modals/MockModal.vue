@@ -4,33 +4,37 @@
             <h2 class="box__title">Link taxi</h2>
             <p class="box__subtitle">Link a taxi identifier to allow position updates to be sent to the server.</p>
         </section>
-        <form action="" class="box__form">
-            <div v-if="formError" class="form__error">{{ formError.message }}</div>
+        <form @submit.prevent="addNewTaxi" class="box__form">
+            <div v-if="errorStore.error" class="form__error" :class="{ 'error--success': errorStore.error.success }">
+                {{ errorStore.error.message }}
+            </div>
             <section class="form__group">
                 <label for="identifier">Vehicle Identifier</label>
                 <input v-model="identifierField" type="text" id="identifier" name="identifier" placeholder="Vehicle Identifier" required />
             </section>
         </form>
         <article class="box__actions">
-            <button @click="store.closeModal" class="button__secondary">Cancel</button>
+            <button @click="modalStore.closeModal" class="button__secondary">Cancel</button>
             <button @click="addNewTaxi" class="button__main">Add new taxi</button>
         </article>
     </article>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useModalStore } from '@/stores/modal';
 import ModalSize from '@/enums/ModalSize';
 import { newTaxiSchema } from '@/validation/NewTaxiSchema';
-import { ValidationError } from 'joi';
+import { createTaxi } from '@/socket';
+import { useErrorStore } from '@/stores/error';
 
 const identifierField = ref();
-const formError: Ref<ValidationError | null> = ref(null);
 
-const store = useModalStore();
+const modalStore = useModalStore();
 const size = ModalSize.extraSmall;
+
+const errorStore = useErrorStore();
 
 function addNewTaxi() {
     const formData = {
@@ -39,10 +43,32 @@ function addNewTaxi() {
 
     const { error, value } = newTaxiSchema.validate(formData);
     if (error) {
-        formError.value = error;
+        errorStore.error = {
+            message: error.message,
+            success: false,
+        };
         return;
     }
+
+    createTaxi(value);
 }
+
+onMounted(() => {
+    watch(
+        () => errorStore.error,
+        (newError) => {
+            if (newError?.success) {
+                setTimeout(() => {
+                    modalStore.closeModal();
+                }, 1000);
+            }
+        }
+    );
+});
+
+onBeforeUnmount(() => {
+    errorStore.error = undefined;
+});
 </script>
 
 <style scoped lang="scss">
@@ -73,6 +99,11 @@ function addNewTaxi() {
         border-radius: 8px;
         font-size: 14px;
         padding: 12px;
+
+        &.error--success {
+            border: 2px solid #6abd6e;
+            background-color: #81c784;
+        }
     }
     .form__group {
         display: flex;
