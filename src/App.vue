@@ -1,11 +1,13 @@
 <template>
     <AppHeader></AppHeader>
     <router-view />
+    <AppModal></AppModal>
 </template>
 
 <script setup lang="ts">
 import AppHeader from '@/components/AppHeader.vue';
 import '../node_modules/mapbox-gl/dist/mapbox-gl.css';
+import AppModal from '@/components/modals/AppModal.vue';
 </script>
 
 <style lang="scss">
