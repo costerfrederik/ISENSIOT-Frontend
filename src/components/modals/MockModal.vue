@@ -7,7 +7,7 @@
         server.
       </p>
     </section>
-    <form action="" class="box__form">
+    <form @submit.prevent="addNewTaxi" class="box__form">
       <div
         v-if="errorStore.error"
         class="form__error"
