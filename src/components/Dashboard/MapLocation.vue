@@ -12,7 +12,7 @@ import { MapDataObject } from '@/interfaces/MapData';
 import { useMapStore } from '@/stores/map';
 
 const mapStore = useMapStore();
-mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xxMzNyeno0MDhhMDJqbzRyc3Z0NnN2cCJ9.8X6v6K23BdJpsN_1-J9Ccg';
+mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmoyb2F5MDUyZTJqc2U3MDF0M3pwNCJ9.U5Uwd-NxCbAcSzZ4W62ZvQ';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
 
 const props = defineProps({
