@@ -25,7 +25,7 @@ import router from '@/router';
 
 const sideBarStore = useSideBarStore();
 const mapStore = useMapStore();
-mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xxMzNyeno0MDhhMDJqbzRyc3Z0NnN2cCJ9.8X6v6K23BdJpsN_1-J9Ccg';
+mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmoyb2F5MDUyZTJqc2U3MDF0M3pwNCJ9.U5Uwd-NxCbAcSzZ4W62ZvQ';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
 
 function handleKeyRelease(event: KeyboardEvent) {
@@ -133,41 +133,41 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .mapContainer {
-  position: relative;
-  height: calc(100vh - 70px);
-  width: 100%;
-
-  .mapPlaceHolder {
-    position: absolute;
-    height: 100%;
+    position: relative;
+    height: calc(100vh - 70px);
     width: 100%;
-  }
 
-  div {
-    position: absolute;
-    z-index: 10000;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 5px;
-  }
+    .mapPlaceHolder {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+    }
 
-  .map__link {
-      font-size: 12px;
-      color: white;
-      background-color: rgba(18, 18, 23, 0.9);
-      border-radius: 8px;
-      padding: 8px 12px;
-      transition: 0.3s;
-      user-select: none; /* Standard syntax */
-      text-align: center;
-      &:not(.link--disabled) {
-        &:hover {
-            background-color: #007afb;
-            cursor: pointer;
+    div {
+        position: absolute;
+        z-index: 10000;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 5px;
+    }
+
+    .map__link {
+        font-size: 12px;
+        color: white;
+        background-color: rgba(18, 18, 23, 0.9);
+        border-radius: 8px;
+        padding: 8px 12px;
+        transition: 0.3s;
+        user-select: none; /* Standard syntax */
+        text-align: center;
+        &:not(.link--disabled) {
+            &:hover {
+                background-color: #007afb;
+                cursor: pointer;
+            }
         }
-      }
-   }
+    }
 }
 </style>
