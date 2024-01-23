@@ -25,7 +25,7 @@ import router from '@/router';
 
 const sideBarStore = useSideBarStore();
 const mapStore = useMapStore();
-mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmoyb2F5MDUyZTJqc2U3MDF0M3pwNCJ9.U5Uwd-NxCbAcSzZ4W62ZvQ';
+mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmozbXEzMTQxYTJxbjE5ejMyMml6dyJ9.gsraLO-9tLQRAJYpe8qZtA';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
 
 function handleKeyRelease(event: KeyboardEvent) {
