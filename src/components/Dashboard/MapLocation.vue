@@ -7,9 +7,9 @@
 <script setup lang="ts">
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import { FeatureCollection, Feature, Polygon, MultiPolygon, Position, Point } from 'geojson';
-import { point, booleanPointInPolygon, multiPolygon } from '@turf/turf';
-import { updateFence } from '@/socket';
+import { FeatureCollection, Feature, Polygon, MultiPolygon, Position } from 'geojson';
+import { booleanPointInPolygon } from '@turf/turf';
+import { saveFence, reDrawFence } from '@/socket';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { MapDataObject } from '@/interfaces/MapData';
@@ -18,7 +18,6 @@ import { useMapStore } from '@/stores/map';
 const mapStore = useMapStore();
 mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmozbXEzMTQxYTJxbjE5ejMyMml6dyJ9.gsraLO-9tLQRAJYpe8qZtA';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
-const draw: Ref<MapboxDraw | null> = ref(null);
 
 const props = defineProps({
     identifier: {
@@ -40,10 +39,6 @@ function handleMapDataUpdate(mapDataObjects: MapDataObject[]) {
         return;
     }
 
-    // Calculate if mapDataObject is trespassing a fence
-    const longLat = [filteredMapDataObject.position.longitude, filteredMapDataObject.position.latitude];
-    // const isTrespassing = isTrespassingFence(longLat);
-
     // Create marker
     mapStore.lockedMapObject = filteredMapDataObject;
     const LngLat = new mapboxgl.LngLat(filteredMapDataObject.position.longitude, filteredMapDataObject.position.latitude);
@@ -62,14 +57,11 @@ function handleMapDataUpdate(mapDataObjects: MapDataObject[]) {
     mapStore.mapMarkers.push(marker);
 }
 
-function getMultiPolygonCoordinates(collection: FeatureCollection) {
+function convertToMultiPolygon(collection: FeatureCollection) {
     const multiPolygonCoordinates: Position[][][] = collection.features
         .filter((feature: Feature) => feature.geometry.type === 'Polygon')
         .map((feature: Feature) => (feature.geometry as Polygon).coordinates);
-    return multiPolygonCoordinates;
-}
 
-function convertToMultiPolygon(multiPolygonCoordinates: Position[][][]) {
     const multiPolygonFeature: Feature<MultiPolygon> = {
         type: 'Feature',
         properties: {},
@@ -82,47 +74,15 @@ function convertToMultiPolygon(multiPolygonCoordinates: Position[][][]) {
     return multiPolygonFeature.geometry;
 }
 
-// Method should insert draw area into database
-function updateFenceArea() {
-    if (!draw.value) {
+function handleFenceDraw() {
+    if (!mapStore.draw) {
         return;
     }
 
-    const collection: FeatureCollection = draw.value.getAll();
-    const multiPolygonCoordinates = getMultiPolygonCoordinates(collection);
-
-    // Insert drawn fence into database
-    updateFence(props.identifier, multiPolygonCoordinates);
-
-    // const multiPolygon = convertToMultiPolygon(multiPolygonCoordinates);
-
-    // if (!multiPolygon) {
-    //     return;
-    // }
-
-    // console.log(multiPolygon);
-
-    // Insert multiPolygon into database
-
-    // const inside = booleanPointInPolygon(pt, multiPolygon);
-    // console.log(inside);
+    const collection: FeatureCollection = mapStore.draw.getAll();
+    const multiPolygon = convertToMultiPolygon(collection);
+    saveFence(props.identifier, multiPolygon);
 }
-
-// function isTrespassingFence(longLat: number[]) {
-//     if (!draw.value) {
-//         return;
-//     }
-
-//     const collection: FeatureCollection = draw.value.getAll();
-//     const multiPolygon = convertToMultiPolygon(collection);
-
-//     if (!multiPolygon) {
-//         return;
-//     }
-
-//     const inside = booleanPointInPolygon(pt, multiPolygon);
-//     console.log(inside);
-// }
 
 onMounted(async () => {
     if (!mapPlaceHolder.value) {
@@ -140,20 +100,15 @@ onMounted(async () => {
         logoPosition: 'bottom-right',
     });
 
-    draw.value = new MapboxDraw({
+    mapStore.draw = new MapboxDraw({
         displayControlsDefault: false,
         controls: {
             polygon: true,
             trash: true,
         },
-        defaultMode: 'draw_polygon',
     });
 
-    map.addControl(draw.value);
-
-    map.on('draw.create', updateFenceArea);
-    map.on('draw.delete', updateFenceArea);
-    map.on('draw.update', updateFenceArea);
+    map.addControl(mapStore.draw);
 
     // Add controls to map
     map.addControl(
@@ -161,6 +116,13 @@ onMounted(async () => {
             visualizePitch: true,
         })
     );
+
+    map.on('load', function () {
+        reDrawFence(props.identifier);
+        map.on('draw.create', handleFenceDraw);
+        map.on('draw.delete', handleFenceDraw);
+        map.on('draw.update', handleFenceDraw);
+    });
 
     mapStore.mapInstance = map;
 

@@ -5,7 +5,8 @@ import { useMapStore } from '@/stores/map';
 import { Taxi } from './interfaces/Taxi';
 import { useErrorStore } from '@/stores/error';
 import { FormError } from '@/interfaces/FormError';
-import { Position } from 'geojson';
+import { MultiPolygon } from 'geojson';
+import { Polygon } from '@turf/turf';
 
 // You can specify here the url for the sockets backend
 const url = 'http://localhost:3000';
@@ -18,40 +19,43 @@ export const socketState = reactive({
     connected: false,
 });
 
-// Set new mapdata when server sends it to us
+// Request a map data refresh
+export function requestData() {
+    socket.emit('data_request');
+}
 socket.on('refresh_needed', (payload: MapDataObject[]) => {
     const mapStore = useMapStore();
     mapStore.setMapData(payload);
 });
 
-// Manually refresh map data
-export function requestData() {
-    socket.emit('data_request');
-}
-
+// Request creation of new taxi
 export function createTaxi(newTaxi: Taxi) {
     socket.emit('taxi_create', newTaxi);
 }
-
-export function updateFence(identifier: string, multiPolygonCoordinates: Position[][][]) {
-    console.log(multiPolygonCoordinates);
-
-    const fencesObject = {
-        fences: multiPolygonCoordinates.map((subArray) => ({
-            coordinates: subArray.map((coordinate) => [
-                coordinate[0], // longitude
-                coordinate[1], // latitude
-            ]),
-        })),
-    };
-
-    console.log(fencesObject);
-
-    socket.emit('fence_update', fencesObject);
-}
-
 socket.on('taxi_inserted', (response: FormError) => {
     const formErrorStore = useErrorStore();
-
     formErrorStore.error = response;
+});
+
+// Request creation/update of fence
+export function saveFence(identifier: string, multiPolygon: MultiPolygon) {
+    socket.emit('fence_save', {
+        identifier: identifier,
+        multiPolygon: multiPolygon,
+    });
+}
+
+// Request a fence data refresh
+export function reDrawFence(identifier: string) {
+    socket.emit('fence_redraw', identifier);
+}
+socket.on('fence_redraw_response', (multiPolygon: MultiPolygon) => {
+    const mapStore = useMapStore();
+
+    if (mapStore.draw) {
+        for (let i = 0; i < multiPolygon.coordinates.length; i++) {
+            const poly: Polygon = { type: 'Polygon', coordinates: multiPolygon.coordinates[i] };
+            mapStore.draw.add(poly);
+        }
+    }
 });
