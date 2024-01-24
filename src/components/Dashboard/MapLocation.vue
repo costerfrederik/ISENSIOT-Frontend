@@ -18,6 +18,7 @@ import { useMapStore } from '@/stores/map';
 const mapStore = useMapStore();
 mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmozbXEzMTQxYTJxbjE5ejMyMml6dyJ9.gsraLO-9tLQRAJYpe8qZtA';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
+const filteredMapDataObject: Ref<MapDataObject | undefined> = ref();
 
 const props = defineProps({
     identifier: {
@@ -26,22 +27,38 @@ const props = defineProps({
     },
 });
 
-function handleMapDataUpdate(mapDataObjects: MapDataObject[]) {
-    const filteredMapDataObject = mapDataObjects.find((mapDataObject: MapDataObject) => {
-        return mapDataObject.identifier == props.identifier;
-    });
-
-    if (!filteredMapDataObject) {
+function updateTrespassingStatus(multiPolygon: MultiPolygon) {
+    if (
+        !mapStore.draw ||
+        !filteredMapDataObject.value ||
+        !filteredMapDataObject.value.position ||
+        !multiPolygon ||
+        multiPolygon.coordinates.length === 0
+    ) {
+        mapStore.isTrespassing = false;
         return;
     }
 
-    if (!mapStore.mapInstance || !filteredMapDataObject.position) {
+    const longLat = [filteredMapDataObject.value.position.longitude, filteredMapDataObject.value.position.latitude];
+    mapStore.isTrespassing = !booleanPointInPolygon(longLat, multiPolygon);
+}
+
+function handleMapDataUpdate(mapDataObjects: MapDataObject[]) {
+    filteredMapDataObject.value = mapDataObjects.find((mapDataObject: MapDataObject) => {
+        return mapDataObject.identifier == props.identifier;
+    });
+
+    if (!filteredMapDataObject.value) {
+        return;
+    }
+
+    if (!mapStore.mapInstance || !filteredMapDataObject.value.position) {
         return;
     }
 
     // Create marker
-    mapStore.lockedMapObject = filteredMapDataObject;
-    const LngLat = new mapboxgl.LngLat(filteredMapDataObject.position.longitude, filteredMapDataObject.position.latitude);
+    mapStore.lockedMapObject = filteredMapDataObject.value;
+    const LngLat = new mapboxgl.LngLat(filteredMapDataObject.value.position.longitude, filteredMapDataObject.value.position.latitude);
     mapStore.mapInstance.setCenter(LngLat);
 
     const markerElement = document.createElement('div');
@@ -50,7 +67,7 @@ function handleMapDataUpdate(mapDataObjects: MapDataObject[]) {
     const marker = new mapboxgl.Marker(markerElement, {
         scale: 0.6,
     })
-        .setLngLat([filteredMapDataObject.position.longitude, filteredMapDataObject.position.latitude])
+        .setLngLat([filteredMapDataObject.value.position.longitude, filteredMapDataObject.value.position.latitude])
         .addTo(mapStore.mapInstance);
 
     // Add marker to store state
@@ -81,6 +98,8 @@ function handleFenceDraw() {
 
     const collection: FeatureCollection = mapStore.draw.getAll();
     const multiPolygon = convertToMultiPolygon(collection);
+
+    updateTrespassingStatus(multiPolygon);
     saveFence(props.identifier, multiPolygon);
 }
 
@@ -125,6 +144,15 @@ onMounted(async () => {
     });
 
     mapStore.mapInstance = map;
+
+    watch(
+        () => mapStore.multiPolygon,
+        (multiPolygon) => {
+            if (multiPolygon) {
+                updateTrespassingStatus(multiPolygon);
+            }
+        }
+    );
 
     watch(
         () => mapStore.mapData,

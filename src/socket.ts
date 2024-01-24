@@ -52,10 +52,13 @@ export function reDrawFence(identifier: string) {
 socket.on('fence_redraw_response', (multiPolygon: MultiPolygon) => {
     const mapStore = useMapStore();
 
-    if (mapStore.draw) {
-        for (let i = 0; i < multiPolygon.coordinates.length; i++) {
-            const poly: Polygon = { type: 'Polygon', coordinates: multiPolygon.coordinates[i] };
-            mapStore.draw.add(poly);
-        }
+    if (!mapStore.draw || !multiPolygon || multiPolygon.coordinates.length === 0) {
+        return;
+    }
+
+    mapStore.multiPolygon = multiPolygon;
+    for (let i = 0; i < multiPolygon.coordinates.length; i++) {
+        const poly: Polygon = { type: 'Polygon', coordinates: multiPolygon.coordinates[i] };
+        mapStore.draw.add(poly);
     }
 });

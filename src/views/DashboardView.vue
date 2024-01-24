@@ -6,6 +6,10 @@
         <section id="cameraFeedContainer">
             <article>
                 <router-link to="/" class="nav__link">← Back to live map</router-link>
+                <article v-if="mapStore.isTrespassing" class="trespassing">
+                    <h3>Area Violation:</h3>
+                    <p>Vehicle detected outside defined perimeter.</p>
+                </article>
                 <h1>{{ identifierFromUrl }}</h1>
                 <p>
                     Dashboard overview for taxi with unique identifier:
@@ -94,6 +98,23 @@ onMounted(() => {
             p {
                 margin: 0;
                 color: #717171;
+            }
+        }
+
+        .trespassing {
+            border: 2px solid #d7b3b3;
+            background-color: #ecc8c5;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 48px;
+
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            h3 {
+                margin: 0;
             }
         }
 
