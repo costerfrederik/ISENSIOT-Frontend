@@ -1,4 +1,5 @@
 import mapboxgl, { Marker } from 'mapbox-gl';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { defineStore } from 'pinia';
 import { MapDataObject } from '@/interfaces/MapData';
 import { computed } from 'vue';
@@ -11,6 +12,7 @@ export const useMapStore = defineStore('map', () => {
     const mapMarkers: Ref<Marker[]> = ref([]);
     const mapSearchQuery: Ref<string> = ref('');
     const lockedMapObject: Ref<MapDataObject | undefined> = ref();
+    const draw: Ref<MapboxDraw | undefined> = ref();
 
     // Watcher that calls method when lockedMapObject changes
     watch(lockedMapObject, (newLockedMapObject, prevLockedMapObject) => {
@@ -149,6 +151,7 @@ export const useMapStore = defineStore('map', () => {
         mapMarkers.value = [];
         mapSearchQuery.value = '';
         lockedMapObject.value = undefined;
+        draw.value = undefined;
     }
 
     // Filters map data based on map search query
@@ -164,6 +167,7 @@ export const useMapStore = defineStore('map', () => {
         mapMarkers,
         mapSearchQuery,
         lockedMapObject,
+        draw,
         setMapData,
         removeAllMapMarkers,
         toggleMapPadding,
