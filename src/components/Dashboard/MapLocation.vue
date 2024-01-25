@@ -1,10 +1,19 @@
 <template>
     <section class="mapContainer">
-        <button class="toggleEditing" @click="toggleFenceDraw">
-            <img v-if="drawDisabled" class="toggleEditing_icon" src="@/assets/show_icon.png" alt="View locked icon" height="18" width="18" />
-            <img v-else class="toggleEditing_icon" src="@/assets/hide_icon.png" alt="View locked icon" height="18" width="18" />
-            {{ drawDisabled ? 'Enable Fence Editor' : 'Disable Fence Editor' }}
-        </button>
+        <section class="customControls">
+            <template v-if="fenceStore.drawHasUnsavedChanged">
+                <button class="customControls-button" @click="saveFenceDrawDB">
+                    <img src="@/assets/save_icon.png" alt="Button icon" height="18" width="18" />
+                    Save Changes
+                </button>
+                <button class="customControls-button" @click="cancelFenceDrawChanges">Cancel changes</button>
+            </template>
+            <button v-else class="customControls-button" @click="toggleFenceDraw">
+                <img v-if="fenceStore.drawDisabled" src="@/assets/show_icon.png" alt="Button icon" height="18" width="18" />
+                <img v-else src="@/assets/hide_icon.png" alt="Button icon" height="18" width="18" />
+                {{ fenceStore.drawDisabled ? 'Enable Fence Editor' : 'Disable Fence Editor' }}
+            </button>
+        </section>
         <section class="mapPlaceHolder" ref="mapPlaceHolder"></section>
     </section>
 </template>
@@ -13,6 +22,7 @@
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw, { Modes } from '@mapbox/mapbox-gl-draw';
 import { FeatureCollection, Feature, Polygon, MultiPolygon, Position } from 'geojson';
+
 import { booleanPointInPolygon } from '@turf/turf';
 import { saveFence, reDrawFence } from '@/socket';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
@@ -20,12 +30,16 @@ import StaticMode from '@mapbox/mapbox-gl-draw-static-mode';
 import type { Ref } from 'vue';
 import { MapDataObject } from '@/interfaces/MapData';
 import { useMapStore } from '@/stores/map';
+import { useFenceStore } from '@/stores/fence';
+import { onBeforeRouteLeave } from 'vue-router';
 
+// State for map
 const mapStore = useMapStore();
+const fenceStore = useFenceStore();
+
 mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmozbXEzMTQxYTJxbjE5ejMyMml6dyJ9.gsraLO-9tLQRAJYpe8qZtA';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
 const filteredMapDataObject: Ref<MapDataObject | undefined> = ref();
-const drawDisabled: Ref<boolean> = ref(true);
 
 const props = defineProps({
     identifier: {
@@ -34,20 +48,20 @@ const props = defineProps({
     },
 });
 
-function updateTrespassingStatus(multiPolygon: MultiPolygon) {
+function updateTrespassingStatus(multiPolygon: MultiPolygon | undefined) {
     if (
-        !mapStore.draw ||
+        !fenceStore.mapBoxDraw ||
         !filteredMapDataObject.value ||
         !filteredMapDataObject.value.position ||
         !multiPolygon ||
         multiPolygon.coordinates.length === 0
     ) {
-        mapStore.isTrespassing = false;
+        fenceStore.isTrespassing = false;
         return;
     }
 
     const longLat = [filteredMapDataObject.value.position.longitude, filteredMapDataObject.value.position.latitude];
-    mapStore.isTrespassing = !booleanPointInPolygon(longLat, multiPolygon);
+    fenceStore.isTrespassing = !booleanPointInPolygon(longLat, multiPolygon);
 }
 
 function handleMapDataUpdate(mapDataObjects: MapDataObject[]) {
@@ -98,31 +112,50 @@ function convertToMultiPolygon(collection: FeatureCollection) {
     return multiPolygonFeature.geometry;
 }
 
-function handleFenceDraw() {
-    if (!mapStore.draw) {
+function saveFenceDrawLocally() {
+    if (!fenceStore.mapBoxDraw) {
         return;
     }
 
-    const collection: FeatureCollection = mapStore.draw.getAll();
-    const multiPolygon = convertToMultiPolygon(collection);
+    const collection: FeatureCollection = fenceStore.mapBoxDraw.getAll();
+    const multiPolygon: MultiPolygon = convertToMultiPolygon(collection);
 
-    updateTrespassingStatus(multiPolygon);
-    saveFence(props.identifier, multiPolygon);
+    fenceStore.drawLocal = multiPolygon;
+    fenceStore.drawHasUnsavedChanged = true;
+}
+
+function saveFenceDrawDB() {
+    if (!fenceStore.drawLocal) {
+        return;
+    }
+
+    saveFence(props.identifier, fenceStore.drawLocal);
+    fenceStore.drawHasUnsavedChanged = false;
+}
+
+function cancelFenceDrawChanges() {
+    if (!fenceStore.mapBoxDraw) {
+        return;
+    }
+
+    fenceStore.addPolygonsToInstance(fenceStore.drawDB);
+    fenceStore.drawLocal = fenceStore.drawDB;
+    fenceStore.drawHasUnsavedChanged = false;
 }
 
 function toggleFenceDraw() {
-    if (!mapStore.draw) {
+    if (!fenceStore.mapBoxDraw) {
         return;
     }
 
-    if (mapStore.draw.getMode() == 'static') {
-        mapStore.draw.changeMode('simple_select');
+    if (fenceStore.mapBoxDraw.getMode() == 'static') {
+        fenceStore.mapBoxDraw.changeMode('simple_select');
         showDrawControls(true);
-        drawDisabled.value = false;
+        fenceStore.drawDisabled = false;
     } else {
-        mapStore.draw.changeMode('static');
+        fenceStore.mapBoxDraw.changeMode('static');
         showDrawControls(false);
-        drawDisabled.value = true;
+        fenceStore.drawDisabled = true;
     }
 }
 
@@ -158,7 +191,7 @@ onMounted(async () => {
     const modes = MapboxDraw.modes;
     modes.static = StaticMode;
 
-    mapStore.draw = new MapboxDraw({
+    fenceStore.mapBoxDraw = new MapboxDraw({
         modes: modes,
         displayControlsDefault: false,
         controls: {
@@ -354,7 +387,7 @@ onMounted(async () => {
         ],
     });
 
-    map.addControl(mapStore.draw);
+    map.addControl(fenceStore.mapBoxDraw);
 
     // Add controls to map
     map.addControl(
@@ -365,20 +398,18 @@ onMounted(async () => {
 
     map.on('load', function () {
         reDrawFence(props.identifier);
-        map.on('draw.create', handleFenceDraw);
-        map.on('draw.delete', handleFenceDraw);
-        map.on('draw.update', handleFenceDraw);
+        map.on('draw.create', saveFenceDrawLocally);
+        map.on('draw.delete', saveFenceDrawLocally);
+        map.on('draw.update', saveFenceDrawLocally);
     });
 
     mapStore.mapInstance = map;
     showDrawControls(false);
 
     watch(
-        () => mapStore.multiPolygon,
+        () => fenceStore.drawLocal,
         (multiPolygon) => {
-            if (multiPolygon) {
-                updateTrespassingStatus(multiPolygon);
-            }
+            updateTrespassingStatus(multiPolygon);
         }
     );
 
@@ -393,6 +424,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
     mapStore.resetStateToInitial();
+    fenceStore.resetStateToInitial();
 });
 </script>
 
@@ -402,7 +434,15 @@ onUnmounted(() => {
     height: 100%;
     width: 100%;
 
-    .toggleEditing {
+    .customControls {
+        position: absolute;
+        margin: 10px 0 0 10px;
+        display: flex;
+        gap: 10px;
+        z-index: 999;
+    }
+
+    .customControls-button {
         border: 2px solid #007afb;
         border-radius: 8px;
         padding: 8px;
@@ -411,9 +451,6 @@ onUnmounted(() => {
 
         background-color: #007afb;
         color: white;
-        margin: 10px 0 0 10px;
-        position: absolute;
-        z-index: 999;
         transition: 0.3s;
 
         display: flex;

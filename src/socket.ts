@@ -7,6 +7,7 @@ import { useErrorStore } from '@/stores/error';
 import { FormError } from '@/interfaces/FormError';
 import { MultiPolygon } from 'geojson';
 import { Polygon } from '@turf/turf';
+import { useFenceStore } from './stores/fence';
 
 // You can specify here the url for the sockets backend
 const url = 'http://localhost:3000';
@@ -49,16 +50,11 @@ export function saveFence(identifier: string, multiPolygon: MultiPolygon) {
 export function reDrawFence(identifier: string) {
     socket.emit('fence_redraw', identifier);
 }
-socket.on('fence_redraw_response', (multiPolygon: MultiPolygon) => {
-    const mapStore = useMapStore();
+socket.on('fence_redraw_response', (multiPolygon: MultiPolygon | undefined) => {
+    const fenceStore = useFenceStore();
 
-    if (!mapStore.draw || !multiPolygon || multiPolygon.coordinates.length === 0) {
-        return;
-    }
+    fenceStore.drawLocal = multiPolygon;
+    fenceStore.drawDB = multiPolygon;
 
-    mapStore.multiPolygon = multiPolygon;
-    for (let i = 0; i < multiPolygon.coordinates.length; i++) {
-        const poly: Polygon = { type: 'Polygon', coordinates: multiPolygon.coordinates[i] };
-        mapStore.draw.add(poly);
-    }
+    fenceStore.addPolygonsToInstance(multiPolygon);
 });

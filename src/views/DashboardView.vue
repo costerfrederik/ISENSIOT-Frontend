@@ -6,7 +6,7 @@
         <section id="cameraFeedContainer">
             <article>
                 <router-link to="/" class="nav__link">← Back to live map</router-link>
-                <article v-if="mapStore.isTrespassing" class="trespassing">
+                <article v-if="fenceStore.isTrespassing" class="trespassing">
                     <h3>Area Violation:</h3>
                     <p>Vehicle detected outside defined perimeter.</p>
                 </article>
@@ -39,8 +39,10 @@ import { requestData } from '@/socket';
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMapStore } from '@/stores/map';
+import { useFenceStore } from '@/stores/fence';
 const route = useRoute();
 const mapStore = useMapStore();
+const fenceStore = useFenceStore();
 
 const identifierFromUrl = computed(() => {
     return route.params.identifier.toString();
