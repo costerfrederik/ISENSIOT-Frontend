@@ -77,8 +77,12 @@ canvas {
             border-radius: 8px;
             padding: 8px 24px;
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
+            transition: 0.15s;
+            &:hover {
+                background-color: #006ee2;
+            }
         }
     }
 }

@@ -148,6 +148,10 @@ onBeforeUnmount(() => {
         color: white;
         background-color: #007afb;
         border: 2px solid #007afb;
+        transition: 0.15s;
+        &:hover {
+            background-color: #006ee2;
+        }
     }
 }
 </style>

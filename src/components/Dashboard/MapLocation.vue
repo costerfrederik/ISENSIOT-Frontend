@@ -1,16 +1,22 @@
 <template>
     <section class="mapContainer">
+        <button class="toggleEditing" @click="toggleFenceDraw">
+            <img v-if="drawDisabled" class="toggleEditing_icon" src="@/assets/show_icon.png" alt="View locked icon" height="18" width="18" />
+            <img v-else class="toggleEditing_icon" src="@/assets/hide_icon.png" alt="View locked icon" height="18" width="18" />
+            {{ drawDisabled ? 'Enable Fence Editor' : 'Disable Fence Editor' }}
+        </button>
         <section class="mapPlaceHolder" ref="mapPlaceHolder"></section>
     </section>
 </template>
 
 <script setup lang="ts">
 import mapboxgl from 'mapbox-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import MapboxDraw, { Modes } from '@mapbox/mapbox-gl-draw';
 import { FeatureCollection, Feature, Polygon, MultiPolygon, Position } from 'geojson';
 import { booleanPointInPolygon } from '@turf/turf';
 import { saveFence, reDrawFence } from '@/socket';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
+import StaticMode from '@mapbox/mapbox-gl-draw-static-mode';
 import type { Ref } from 'vue';
 import { MapDataObject } from '@/interfaces/MapData';
 import { useMapStore } from '@/stores/map';
@@ -19,6 +25,7 @@ const mapStore = useMapStore();
 mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmozbXEzMTQxYTJxbjE5ejMyMml6dyJ9.gsraLO-9tLQRAJYpe8qZtA';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
 const filteredMapDataObject: Ref<MapDataObject | undefined> = ref();
+const drawDisabled: Ref<boolean> = ref(true);
 
 const props = defineProps({
     identifier: {
@@ -103,6 +110,36 @@ function handleFenceDraw() {
     saveFence(props.identifier, multiPolygon);
 }
 
+function toggleFenceDraw() {
+    if (!mapStore.draw) {
+        return;
+    }
+
+    if (mapStore.draw.getMode() == 'static') {
+        mapStore.draw.changeMode('simple_select');
+        showDrawControls(true);
+        drawDisabled.value = false;
+    } else {
+        mapStore.draw.changeMode('static');
+        showDrawControls(false);
+        drawDisabled.value = true;
+    }
+}
+
+function showDrawControls(show: boolean) {
+    const controls = Array.from(document.getElementsByClassName('mapboxgl-ctrl-group')) as HTMLElement[];
+
+    if (controls.length === 0) {
+        return;
+    }
+
+    if (show) {
+        controls[0].style.display = 'initial';
+    } else {
+        controls[0].style.display = 'none';
+    }
+}
+
 onMounted(async () => {
     if (!mapPlaceHolder.value) {
         return;
@@ -119,12 +156,17 @@ onMounted(async () => {
         logoPosition: 'bottom-right',
     });
 
+    const modes = MapboxDraw.modes;
+    modes.static = StaticMode;
+
     mapStore.draw = new MapboxDraw({
+        modes: modes,
         displayControlsDefault: false,
         controls: {
             polygon: true,
             trash: true,
         },
+        defaultMode: 'static',
     });
 
     map.addControl(mapStore.draw);
@@ -144,6 +186,7 @@ onMounted(async () => {
     });
 
     mapStore.mapInstance = map;
+    showDrawControls(false);
 
     watch(
         () => mapStore.multiPolygon,
@@ -170,8 +213,32 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .mapContainer {
+    position: relative;
     height: 100%;
     width: 100%;
+
+    .toggleEditing {
+        border: 2px solid #007afb;
+        border-radius: 8px;
+        padding: 8px;
+        font-size: 13px;
+        cursor: pointer;
+
+        background-color: #007afb;
+        color: white;
+        margin: 10px 0 0 10px;
+        position: absolute;
+        z-index: 999;
+        transition: 0.3s;
+
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.15s;
+        &:hover {
+            background-color: #006ee2;
+        }
+    }
 
     .mapPlaceHolder {
         height: 100%;
