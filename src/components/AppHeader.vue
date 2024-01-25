@@ -2,6 +2,7 @@
     <header class="header">
         <nav class="header__nav">
             <router-link to="/" class="nav__link" active-class="link--active">Live map</router-link>
+            <router-link to="/violations" class="nav__link" active-class="link--active">Violations Log</router-link>
         </nav>
         <span class="header__divider"></span>
         <button class="header__action" @click="openModal">Add new taxi</button>
