@@ -4,7 +4,6 @@ import { MapDataObject } from '@/interfaces/MapData';
 import { computed } from 'vue';
 import { ref, watch } from 'vue';
 import type { Ref } from 'vue';
-import { Violation } from '@/interfaces/Violation';
 
 export const useMapStore = defineStore('map', () => {
     const mapInstance: Ref<mapboxgl.Map | undefined> = ref();
@@ -12,7 +11,6 @@ export const useMapStore = defineStore('map', () => {
     const mapMarkers: Ref<Marker[]> = ref([]);
     const mapSearchQuery: Ref<string> = ref('');
     const lockedMapObject: Ref<MapDataObject | undefined> = ref();
-    const violationLog: Ref<Violation[] | undefined> = ref();
 
     // Watcher that calls method when lockedMapObject changes
     watch(lockedMapObject, (newLockedMapObject, prevLockedMapObject) => {
@@ -151,7 +149,6 @@ export const useMapStore = defineStore('map', () => {
         mapMarkers.value = [];
         mapSearchQuery.value = '';
         lockedMapObject.value = undefined;
-        violationLog.value = undefined;
     }
 
     // Filters map data based on map search query
@@ -172,6 +169,5 @@ export const useMapStore = defineStore('map', () => {
         toggleMapPadding,
         resetStateToInitial,
         filteredMapData,
-        violationLog,
     };
 });

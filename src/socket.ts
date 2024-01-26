@@ -2,11 +2,11 @@ import { reactive } from 'vue';
 import { io } from 'socket.io-client';
 import { MapDataObject } from './interfaces/MapData';
 import { useMapStore } from '@/stores/map';
+import { useViolationStore } from './stores/violation';
 import { Taxi } from './interfaces/Taxi';
 import { useErrorStore } from '@/stores/error';
 import { FormError } from '@/interfaces/FormError';
 import { MultiPolygon } from 'geojson';
-import { Polygon } from '@turf/turf';
 import { useFenceStore } from './stores/fence';
 import { Violation } from './interfaces/Violation';
 
@@ -65,6 +65,6 @@ export function requestViolations() {
     socket.emit('violations_request');
 }
 socket.on('violations_request_response', (payload: Violation[]) => {
-    const mapStore = useMapStore();
-    mapStore.violationLog = payload;
+    const violationStore = useViolationStore();
+    violationStore.violationLog = payload;
 });
