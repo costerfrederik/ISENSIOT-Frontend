@@ -9,6 +9,7 @@ interface Position {
 interface MapDataObject {
     identifier: string;
     position?: Position;
+    trespassing: boolean;
 }
 
 export { MapDataObject, Position };

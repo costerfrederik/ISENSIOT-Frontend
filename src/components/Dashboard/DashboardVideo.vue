@@ -97,6 +97,5 @@ onBeforeUnmount(() => {
     aspect-ratio: 16/9;
     width: 100%;
     border-radius: 12px;
-    margin-bottom: 24px;
 }
 </style>
