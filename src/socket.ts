@@ -8,6 +8,7 @@ import { FormError } from '@/interfaces/FormError';
 import { MultiPolygon } from 'geojson';
 import { Polygon } from '@turf/turf';
 import { useFenceStore } from './stores/fence';
+import { Violation } from './interfaces/Violation';
 
 // You can specify here the url for the sockets backend
 const url = 'http://localhost:3000';
@@ -57,4 +58,13 @@ socket.on('fence_redraw_response', (multiPolygon: MultiPolygon | undefined) => {
     fenceStore.drawDB = multiPolygon;
 
     fenceStore.addPolygonsToInstance(multiPolygon);
+});
+
+// Request a map data refresh
+export function requestViolations() {
+    socket.emit('violations_request');
+}
+socket.on('violations_request_response', (payload: Violation[]) => {
+    const mapStore = useMapStore();
+    mapStore.violationLog = payload;
 });

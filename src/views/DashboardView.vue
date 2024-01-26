@@ -78,7 +78,7 @@ onMounted(() => {
         padding: 48px 24px;
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 48px;
 
         article {
             .nav__link {
