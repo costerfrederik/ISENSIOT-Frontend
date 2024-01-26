@@ -4,6 +4,7 @@ interface Violation {
     latitude: number;
     longitude: number;
     datetime: Date;
+    speed: number;
 }
 
 export { Violation };

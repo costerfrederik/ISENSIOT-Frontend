@@ -15,7 +15,8 @@
             <table>
                 <tr>
                     <th width="8%">Vehicle</th>
-                    <th width="82%">Violation datetime</th>
+                    <th width="8%">Violation datetime</th>
+                    <th width="74%">GPS Speed</th>
                     <th width="10%">Location</th>
                 </tr>
                 <tr v-for="violation in paginated" :key="violation.id">
@@ -23,6 +24,7 @@
                         <router-link :to="'/dashboard/' + violation.vehicle_identifier">{{ violation.vehicle_identifier }}</router-link>
                     </td>
                     <td>{{ convertDate(violation.datetime) }}</td>
+                    <td>{{ violation.speed + ' km/h' }}</td>
                     <td>
                         <a :href="'https://www.google.com/maps/place/' + violation.latitude + ',' + violation.longitude" target="_blank"
                             >Open in Google Maps</a
@@ -137,6 +139,9 @@ onUnmounted(() => {
             font-size: 14px;
             cursor: pointer;
             transition: 0.15s;
+            &:hover {
+                background-color: #006ee2;
+            }
             &:disabled {
                 opacity: 0.5;
                 cursor: default;
