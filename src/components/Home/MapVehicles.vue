@@ -41,6 +41,7 @@
                 :last-position="lastPositionFormatted(mapObject.position)"
                 @onSelect="handleOnSelect(mapObject)"
                 :active="mapObject.identifier == mapStore.lockedMapObject?.identifier"
+                :disabled="!mapObject.position"
             ></VehicleResult>
         </template>
     </section>
