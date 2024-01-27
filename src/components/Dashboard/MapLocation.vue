@@ -37,9 +37,10 @@ import { onBeforeRouteLeave } from 'vue-router';
 const mapStore = useMapStore();
 const fenceStore = useFenceStore();
 
-mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xybmoyb2F5MDUyZTJqc2U3MDF0M3pwNCJ9.U5Uwd-NxCbAcSzZ4W62ZvQ';
+mapboxgl.accessToken = 'pk.eyJ1IjoiaXNlbnNpb3QiLCJhIjoiY2xydXZrcGRsMG9rOTJrbG1wemV5bG85cyJ9.7mq0gqg-bRiD5GOYJP1XNQ';
 const mapPlaceHolder: Ref<HTMLElement | null> = ref(null);
 const filteredMapDataObject: Ref<MapDataObject | undefined> = ref();
+const hasCenterSet: Ref<boolean> = ref(false);
 
 const props = defineProps({
     identifier: {
@@ -80,7 +81,11 @@ function handleMapDataUpdate(mapDataObjects: MapDataObject[]) {
     // Create marker
     mapStore.lockedMapObject = filteredMapDataObject.value;
     const LngLat = new mapboxgl.LngLat(filteredMapDataObject.value.position.longitude, filteredMapDataObject.value.position.latitude);
-    mapStore.mapInstance.setCenter(LngLat);
+
+    if (!hasCenterSet.value) {
+        mapStore.mapInstance.setCenter(LngLat);
+        hasCenterSet.value = true;
+    }
 
     const markerElement = document.createElement('div');
     markerElement.className = 'marker';
@@ -88,7 +93,7 @@ function handleMapDataUpdate(mapDataObjects: MapDataObject[]) {
     const marker = new mapboxgl.Marker(markerElement, {
         scale: 0.6,
     })
-        .setLngLat([filteredMapDataObject.value.position.longitude, filteredMapDataObject.value.position.latitude])
+        .setLngLat(LngLat)
         .addTo(mapStore.mapInstance);
 
     // Add marker to store state

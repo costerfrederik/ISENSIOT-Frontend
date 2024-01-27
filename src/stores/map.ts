@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { MapDataObject } from '@/interfaces/MapData';
 import { computed } from 'vue';
 import { ref, watch } from 'vue';
+import { useFenceStore } from './fence';
 import type { Ref } from 'vue';
 
 export const useMapStore = defineStore('map', () => {
@@ -78,10 +79,15 @@ export const useMapStore = defineStore('map', () => {
             return;
         }
 
+        const fenceStore = useFenceStore();
+        if (!fenceStore.drawDisabled) {
+            return;
+        }
+
         mapInstance.value.flyTo({
             center: [lockedMapObject.value.position.longitude, lockedMapObject.value.position.latitude],
-            zoom: 15,
-            speed: 0.9,
+            zoom: 17,
+            speed: 1,
             essential: true,
         });
     }
@@ -106,13 +112,13 @@ export const useMapStore = defineStore('map', () => {
                 return;
             }
 
-            mapInstance.value.flyTo({
-                center: [currentLongitude, currentLatitude],
-                zoom: 15,
-                speed: 0.9,
-                duration: 2500,
-                essential: true,
-            });
+            // mapInstance.value.flyTo({
+            //     center: [currentLongitude, currentLatitude],
+            //     zoom: 15,
+            //     speed: 0.9,
+            //     duration: 2500,
+            //     essential: true,
+            // });
         });
     }
 
